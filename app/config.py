@@ -5,7 +5,13 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env once, for every entry point (flask CLI, scripts, gunicorn).
+# Real environment variables always win over the file.
+load_dotenv(BASE_DIR / ".env", override=False)
 
 
 def _normalise_db_url(url: str) -> str:

@@ -38,6 +38,7 @@ with app.app_context():
     # Copy everything out before the session closes.
     product_slug = product.slug if product else None
     product_id = product.id if product else None
+    has_images = bool(product.images) if product else False
     category_slug = category.slug if category else None
     share_token = link.token
 
@@ -55,7 +56,8 @@ public_checks = [
 ]
 if product_slug:
     public_checks.append((f"/p/{product_slug}", 200))
-    public_checks.append((f"/p/{product_slug}/download", 200))
+    if has_images:
+        public_checks.append((f"/p/{product_slug}/download", 200))
 if category_slug:
     public_checks.append((f"/c/{category_slug}", 200))
 

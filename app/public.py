@@ -266,11 +266,16 @@ def sitemap():
 @bp.app_context_processor
 def inject_site():
     cfg = current_app.config
-    categories = db.session.scalars(
-        select(Category)
-        .where(Category.parent_id.is_(None), Category.is_active.is_(True))
-        .order_by(Category.sort_order, Category.name)
-    ).all()
+    try:
+        categories = db.session.scalars(
+            select(Category)
+            .where(Category.parent_id.is_(None), Category.is_active.is_(True))
+            .order_by(Category.sort_order, Category.name)
+        ).all()
+    except Exception:  # noqa: BLE001 - never let navigation break error pages
+        db.session.rollback()
+        current_app.logger.exception("Could not load navigation categories")
+        categories = []
     return {
         "nav_categories": categories,
         "site_name": cfg["SITE_NAME"],

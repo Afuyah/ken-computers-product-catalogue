@@ -32,4 +32,7 @@ RUN useradd --create-home --uid 10001 app && chown -R app:app /app
 USER app
 
 EXPOSE 8080
-CMD ["gunicorn", "-c", "gunicorn.conf.py", "wsgi:app"]
+# Create missing tables on boot, but never let a database problem stop the
+# process from starting (health checks and static files still work, and the
+# warning shows up in the deploy logs).
+CMD ["sh", "-c", "flask --app wsgi init-db || echo 'WARNING: database init failed - check DATABASE_URL'; exec gunicorn -c gunicorn.conf.py wsgi:app"]
