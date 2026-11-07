@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Staff sign in — {{ site_name }}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="grid min-h-screen place-items-center bg-slate-100 px-4">
+  <div class="w-full max-w-sm">
+    <div class="mb-6 flex items-center justify-center gap-2">
+      <span class="grid h-10 w-10 place-items-center rounded-xl bg-blue-700 text-xl font-black text-white">K</span>
+      <div class="leading-tight">
+        <div class="font-bold">Ken Computers MSA</div>
+        <div class="text-[11px] font-semibold uppercase tracking-widest text-blue-700">Staff area</div>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="mb-3 rounded-lg border px-4 py-2.5 text-sm
+          {% if category == 'error' %}border-red-200 bg-red-50 text-red-800
+          {% else %}border-blue-200 bg-blue-50 text-blue-800{% endif %}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="post" class="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div>
+        <label class="label" for="email">Email</label>
+        <input class="input" id="email" name="email" type="email" autocomplete="username" required autofocus>
+      </div>
+      <div>
+        <label class="label" for="password">Password</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <label class="flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-700">
+        Keep me signed in
+      </label>
+      <button class="btn-primary w-full" type="submit">Sign in</button>
+    </form>
+
+    <p class="mt-6 text-center text-xs text-slate-500">
+      <a class="hover:text-blue-700" href="{{ url_for('public.home') }}">← Back to the catalogue</a>
+    </p>
+  </div>
+</body>
+</html>

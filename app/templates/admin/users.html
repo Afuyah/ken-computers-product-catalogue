@@ -1,0 +1,70 @@
+{% extends "admin/base.html" %}
+{% block title %}Users{% endblock %}
+{% block heading %}Users{% endblock %}
+
+{% block content %}
+<div class="grid gap-5 lg:grid-cols-3">
+  <form method="post" class="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2 class="text-sm font-bold">Invite a staff member</h2>
+    <div>
+      <label class="label" for="email">Email *</label>
+      <input class="input" id="email" name="email" type="email" required>
+    </div>
+    <div>
+      <label class="label" for="name">Name</label>
+      <input class="input" id="name" name="name" maxlength="120">
+    </div>
+    <div>
+      <label class="label" for="password">Temporary password *</label>
+      <input class="input" id="password" name="password" type="text" minlength="8" required>
+      <p class="mt-1 text-xs text-slate-500">At least 8 characters. Share it privately, then ask them to change it.</p>
+    </div>
+    <button class="btn-primary w-full" type="submit">Create user</button>
+  </form>
+
+  <div class="lg:col-span-2">
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-3 py-2 font-semibold">User</th>
+            <th class="px-3 py-2 font-semibold">Role</th>
+            <th class="px-3 py-2 font-semibold">Status</th>
+            <th class="px-3 py-2 font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for user in users %}
+            <tr>
+              <td class="px-3 py-2">
+                <div class="font-medium">{{ user.display_name }}</div>
+                <div class="text-xs text-slate-500">{{ user.email }}</div>
+              </td>
+              <td class="px-3 py-2"><span class="badge bg-slate-100 text-slate-600 ring-slate-500/20">{{ user.role }}</span></td>
+              <td class="px-3 py-2">
+                {% if user.is_active %}
+                  <span class="text-xs font-semibold text-emerald-700">Active</span>
+                {% else %}
+                  <span class="text-xs font-semibold text-slate-400">Disabled</span>
+                {% endif %}
+              </td>
+              <td class="px-3 py-2">
+                <form method="post" class="flex flex-wrap items-center justify-end gap-1">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input class="input !w-36 !py-1.5" type="password" name="password" placeholder="New password" aria-label="New password">
+                  <button class="rounded px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-50"
+                          type="submit" formaction="{{ url_for('admin.user_password', user_id=user.id) }}">Set</button>
+                  <button class="rounded px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-50"
+                          type="submit" formaction="{{ url_for('admin.user_toggle', user_id=user.id) }}">{{ 'Disable' if user.is_active else 'Enable' }}</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-2 text-xs text-slate-500">Staff can manage products, media and share links. Only owners can manage users.</p>
+  </div>
+</div>
+{% endblock %}

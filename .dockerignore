@@ -1,0 +1,13 @@
+.venv
+.tmp
+__pycache__
+*.pyc
+.env
+instance
+media
+node_modules
+app/static/css/app.css
+.git
+.gitignore
+README.md
+*.log

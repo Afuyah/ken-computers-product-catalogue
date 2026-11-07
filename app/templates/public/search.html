@@ -1,0 +1,26 @@
+{% extends "public/base.html" %}
+{% from "public/_macros.html" import product_card, pagination_nav %}
+{% block title %}{% if q %}Search: {{ q }}{% else %}All products{% endif %} — {{ site_name }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-black tracking-tight">
+  {% if q %}Results for “{{ q }}”{% else %}All products{% endif %}
+</h1>
+<p class="mt-1 text-sm text-slate-500">{{ pagination.total }} item(s) found</p>
+
+{% if products %}
+  <div class="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    {% for product in products %}{{ product_card(product) }}{% endfor %}
+  </div>
+  {{ pagination_nav(pagination) }}
+{% else %}
+  <div class="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+    <p class="font-semibold text-slate-700">We could not find anything for “{{ q }}”.</p>
+    <p class="mt-1 text-sm text-slate-500">Try a shorter search, or ask us on WhatsApp.</p>
+    <div class="mt-4 flex justify-center gap-2">
+      <a class="btn-outline" href="{{ url_for('public.home') }}">Back home</a>
+      <a class="btn-whatsapp" href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

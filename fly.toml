@@ -1,0 +1,43 @@
+# Fly.io configuration — Johannesburg is the closest region to Kenya.
+# Deploy:  fly launch --no-deploy  (then)  fly deploy
+# Note: Fly Managed Postgres is NOT available in jnb. If you put the database
+# on Fly you must run Postgres yourself on a Machine + volume in the same region.
+
+app = "kencomputersmsa"
+primary_region = "jnb"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[deploy]
+  release_command = "flask --app wsgi init-db"
+
+[env]
+  STORAGE_BACKEND = "r2"
+  SITE_URL = "https://kencomputersmsa.com"
+  SITE_NAME = "Ken Computers MSA"
+  SESSION_COOKIE_SECURE = "1"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "20s"
+  method = "GET"
+  path = "/healthz"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

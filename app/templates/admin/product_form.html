@@ -1,0 +1,237 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'New product' if is_new else product.title }}{% endblock %}
+{% block heading %}{{ 'New product' if is_new else 'Edit product' }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h2 class="text-lg font-bold">{{ product.title or 'Untitled product' }}</h2>
+    {% if not is_new %}
+      <p class="text-xs text-slate-500">SKU {{ product.sku }} · updated {{ product.updated_at.strftime('%d %b %Y %H:%M') }}</p>
+    {% endif %}
+  </div>
+  <div class="flex gap-2">
+    {% if not is_new %}
+      <a class="btn-outline" href="{{ url_for('public.product', slug=product.slug) }}" target="_blank">View live ↗</a>
+    {% endif %}
+    <a class="btn-outline" href="{{ url_for('admin.products') }}">Back to list</a>
+  </div>
+</div>
+
+<form method="post" class="mt-5 grid gap-5 lg:grid-cols-3"
+      action="{{ url_for('admin.product_new') if is_new else url_for('admin.product_edit', product_id=product.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="space-y-5 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h3 class="text-sm font-bold">Basics</h3>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="label" for="title">Title *</label>
+          <input class="input" id="title" name="title" value="{{ product.title }}" required maxlength="200"
+                 placeholder="e.g. HP EliteBook 840 G8 — i5, 16GB, 512GB">
+        </div>
+        <div>
+          <label class="label" for="sku">SKU *</label>
+          <input class="input" id="sku" name="sku" value="{{ product.sku }}" required maxlength="60" placeholder="KCM-1001">
+        </div>
+        <div>
+          <label class="label" for="brand">Brand</label>
+          <input class="input" id="brand" name="brand" value="{{ product.brand }}" maxlength="80" placeholder="HP">
+        </div>
+        <div>
+          <label class="label" for="category_id">Category</label>
+          <select class="input" id="category_id" name="category_id">
+            <option value="">— none —</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if product.category_id == category.id %}selected{% endif %}>
+                {{ category.parent.name ~ ' › ' if category.parent }}{{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="label" for="condition">Condition</label>
+          <select class="input" id="condition" name="condition">
+            {% for condition in conditions %}
+              <option value="{{ condition }}" {% if product.condition == condition %}selected{% endif %}>{{ condition }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="label" for="summary">Short summary</label>
+          <input class="input" id="summary" name="summary" value="{{ product.summary }}" maxlength="300"
+                 placeholder="One line shown under the title and in search results">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="label" for="description">Description</label>
+          <textarea class="input min-h-[8rem]" id="description" name="description" placeholder="Warranty, condition notes, what's in the box…">{{ product.description }}</textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h3 class="text-sm font-bold">Specifications</h3>
+      <p class="mt-1 text-xs text-slate-500">One per line, in <code class="rounded bg-slate-100 px-1">Label: Value</code> form.</p>
+      <textarea class="input mt-3 min-h-[9rem] font-mono text-xs" id="specs" name="specs"
+                placeholder="Processor: Intel Core i5-1135G7&#10;Memory: 16 GB DDR4&#10;Storage: 512 GB NVMe SSD">{{ product.specs_text }}</textarea>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h3 class="text-sm font-bold">SEO</h3>
+      <div class="mt-3">
+        <label class="label" for="slug">URL slug</label>
+        <div class="flex items-center gap-1 text-sm text-slate-500">
+          <span class="shrink-0">{{ site_url }}/p/</span>
+          <input class="input" id="slug" name="slug" value="{{ product.slug }}" maxlength="180" placeholder="auto-generated-from-title">
+        </div>
+        <p class="mt-1 text-xs text-slate-500">Changing this keeps the old URL working with a permanent redirect.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="space-y-5">
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h3 class="text-sm font-bold">Price &amp; stock</h3>
+      <div class="mt-3 space-y-3">
+        <div>
+          <label class="label" for="price_kes">Price (KES) *</label>
+          <input class="input" id="price_kes" name="price_kes" type="number" min="0" step="50"
+                 value="{{ product.price_kes or 0 }}" required>
+        </div>
+        <div>
+          <label class="label" for="price_was_kes">Was price (optional)</label>
+          <input class="input" id="price_was_kes" name="price_was_kes" type="number" min="0" step="50"
+                 value="{{ product.price_was_kes or '' }}" placeholder="Shows a strikethrough">
+        </div>
+        <div>
+          <label class="label" for="stock_status">Stock status</label>
+          <select class="input" id="stock_status" name="stock_status">
+            {% for value, label in stock_labels.items() %}
+              <option value="{{ value }}" {% if product.stock_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="label" for="stock_note">Stock note (optional)</label>
+          <input class="input" id="stock_note" name="stock_note" value="{{ product.stock_note }}" maxlength="200"
+                 placeholder="e.g. 2 units left in Mombasa">
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h3 class="text-sm font-bold">Visibility</h3>
+      <div class="mt-3 space-y-2 text-sm">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="is_published" class="h-4 w-4 rounded border-slate-300 text-blue-700"
+                 {% if product.is_published %}checked{% endif %}>
+          Published (visible to customers)
+        </label>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="is_featured" class="h-4 w-4 rounded border-slate-300 text-blue-700"
+                 {% if product.is_featured %}checked{% endif %}>
+          Featured on the home page
+        </label>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-2">
+      <button class="btn-primary w-full" type="submit">{{ 'Create product' if is_new else 'Save changes' }}</button>
+      {% if not is_new %}
+        <a class="btn-outline w-full" href="{{ url_for('public.product', slug=product.slug) }}" target="_blank">Preview</a>
+      {% endif %}
+    </div>
+  </div>
+</form>
+
+{% if not is_new %}
+<section class="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h3 class="text-sm font-bold">Photos &amp; video</h3>
+      <p class="text-xs text-slate-500">{{ product.media | length }} file(s). Images are resized to 400 / 800 / 1600 px in WebP. The first item is the cover.</p>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('admin.media_upload', product_id=product.id) }}"
+        enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-2 rounded-lg bg-slate-50 p-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="min-w-[14rem] flex-1">
+      <label class="label" for="files">Add files</label>
+      <input class="input" id="files" name="files" type="file" multiple accept="image/*,video/mp4,video/quicktime">
+    </div>
+    <button class="btn-primary" type="submit">Upload</button>
+  </form>
+
+  {% if product.media %}
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      {% for media in product.media %}
+        <div class="overflow-hidden rounded-lg border border-slate-200">
+          <div class="relative aspect-square bg-slate-50">
+            {% if media.kind == 'image' and media.thumb %}
+              <img src="{{ media.thumb.url }}" alt="{{ media.alt }}" class="h-full w-full object-contain" loading="lazy">
+            {% elif media.poster %}
+              <img src="{{ media.poster.url }}" alt="{{ media.alt }}" class="h-full w-full object-contain" loading="lazy">
+              <span class="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">VIDEO</span>
+            {% else %}
+              <div class="grid h-full place-items-center text-2xl text-slate-300">🎬</div>
+            {% endif %}
+            {% if loop.first %}<span class="absolute left-1 top-1 rounded bg-blue-700 px-1.5 py-0.5 text-[10px] font-bold text-white">COVER</span>{% endif %}
+          </div>
+          <div class="flex items-center justify-between gap-1 border-t border-slate-100 p-1.5">
+            <div class="flex gap-1">
+              <form method="post" action="{{ url_for('admin.media_move', product_id=product.id, media_id=media.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="direction" value="up">
+                <button class="rounded px-1.5 py-0.5 text-xs hover:bg-slate-100" type="submit" title="Move earlier">↑</button>
+              </form>
+              <form method="post" action="{{ url_for('admin.media_move', product_id=product.id, media_id=media.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="direction" value="down">
+                <button class="rounded px-1.5 py-0.5 text-xs hover:bg-slate-100" type="submit" title="Move later">↓</button>
+              </form>
+            </div>
+            <div class="flex gap-1">
+              {% if not loop.first %}
+                <form method="post" action="{{ url_for('admin.media_cover', product_id=product.id, media_id=media.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="rounded px-1.5 py-0.5 text-xs text-blue-700 hover:bg-blue-50" type="submit">Cover</button>
+                </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('admin.media_delete', product_id=product.id, media_id=media.id) }}"
+                    onsubmit="return confirm('Delete this file permanently?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="rounded px-1.5 py-0.5 text-xs text-red-600 hover:bg-red-50" type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="mt-4 rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+      No photos yet. Upload JPG, PNG or WebP — and short MP4 clips.
+    </p>
+  {% endif %}
+</section>
+
+<section class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+  <div>
+    <h3 class="text-sm font-bold text-red-800">Danger zone</h3>
+    <p class="text-xs text-red-700">Deleting removes the product and every image from storage. This cannot be undone.</p>
+  </div>
+  <div class="flex gap-2">
+    <form method="post" action="{{ url_for('admin.product_duplicate', product_id=product.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn-outline" type="submit">Duplicate</button>
+    </form>
+    <form method="post" action="{{ url_for('admin.product_delete', product_id=product.id) }}"
+          onsubmit="return confirm('Delete {{ product.title|e }} permanently?')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700" type="submit">Delete product</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

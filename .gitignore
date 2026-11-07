@@ -1,0 +1,14 @@
+.venv/
+.tmp/
+__pycache__/
+*.py[cod]
+.env
+instance/
+media/
+app/static/css/app.css
+node_modules/
+.DS_Store
+*.log
+srv.out
+srv.err
+preview-*.png

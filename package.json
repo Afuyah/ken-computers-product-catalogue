@@ -1,0 +1,13 @@
+{
+  "name": "kencomputersmsa",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tailwind build for the Ken Computers MSA catalogue",
+  "scripts": {
+    "css:build": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/app.css --minify",
+    "css:watch": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

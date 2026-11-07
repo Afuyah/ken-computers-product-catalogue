@@ -1,0 +1,37 @@
+{% extends "public/base.html" %}
+{% from "public/_macros.html" import product_card %}
+{% block title %}{{ link.title }} — {{ site_name }}{% endblock %}
+{% block description %}{{ link.note or ('A selection from ' ~ site_name) }}{% endblock %}
+
+{% block content %}
+<div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+  <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">Shared selection</p>
+  <h1 class="mt-2 text-2xl font-black tracking-tight">{{ link.title }}</h1>
+  {% if link.note %}<p class="mt-2 max-w-2xl text-sm text-slate-600">{{ link.note }}</p>{% endif %}
+  <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+    <span class="rounded-full bg-slate-100 px-2.5 py-1">{{ products | length }} item(s)</span>
+    {% if link.expires_at %}
+      <span class="rounded-full bg-amber-50 px-2.5 py-1 text-amber-800">Valid until {{ link.expires_at.strftime('%d %b %Y') }}</span>
+    {% endif %}
+    <a class="rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700"
+       href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener">Questions? WhatsApp us</a>
+  </div>
+</div>
+
+{% if products %}
+  <div class="mt-5 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    {% for product in products %}
+      <div>
+        {{ product_card(product) }}
+        {% if link.show_prices %}
+          <p class="mt-1 px-1 text-sm font-bold text-slate-900">{{ product.price_kes | kes }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="mt-6 rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+    This selection is empty.
+  </div>
+{% endif %}
+{% endblock %}
