@@ -59,6 +59,15 @@ check("staff cards expose Edit", "✎ Edit" in grid)
 check("staff cards expose Share", "↗ Share" in grid)
 check("staff cards expose ZIP", "⬇ ZIP" in grid)
 
+preview_toggle = client.get("/preview?next=/", follow_redirects=True).get_data(as_text=True)
+check("preview hides staff chrome", "Staff workspace" not in preview_toggle)
+check("preview shows customer header", "Staff login" in preview_toggle)
+check("preview banner is visible", "Previewing as a customer" in preview_toggle)
+check("preview hides card actions", "⬇ ZIP" not in preview_toggle)
+client.get("/preview?next=/", follow_redirects=True)
+back = client.get("/search").get_data(as_text=True)
+check("leaving preview restores staff mode", "Staff workspace" in back and "⬇ ZIP" in back)
+
 anon_grid = app.test_client().get("/search").get_data(as_text=True)
 check("public cards stay clean", "✎ Edit" not in anon_grid and "⬇ ZIP" not in anon_grid)
 

@@ -21,7 +21,18 @@
   {% block head %}{% endblock %}
 </head>
 {% set staff = current_user.is_authenticated %}
+{% set staff_preview = session.get('staff_preview', False) %}
+{% set staff = staff_mode %}
 <body class="flex min-h-full flex-col bg-slate-50 text-slate-900 antialiased">
+
+  {% if current_user.is_authenticated and staff_preview %}
+    <div class="bg-amber-400 text-amber-950">
+      <div class="shell flex items-center justify-between gap-4 py-1.5 text-xs">
+        <span class="truncate font-semibold">Previewing as a customer — downloads and sharing are hidden.</span>
+        <a class="shrink-0 rounded bg-amber-950/10 px-2 py-1 font-bold hover:bg-amber-950/20" href="{{ url_for('public.preview', next=request.path) }}">Exit preview</a>
+      </div>
+    </div>
+  {% endif %}
 
   {% if staff %}
     <div class="bg-slate-900 text-slate-200">
@@ -30,7 +41,7 @@
           <span class="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Staff</span>
           <span class="truncate text-slate-300">{{ current_user.display_name }} · {{ current_user.role }}</span>
         </span>
-        <a class="shrink-0 font-semibold text-slate-300 hover:text-white" href="{{ url_for('public.home') }}">View public site ↗</a>
+        <a class="shrink-0 font-semibold text-slate-300 hover:text-white" href="{{ url_for('public.preview', next='/') }}">View public site ↗</a>
       </div>
     </div>
   {% else %}
@@ -116,7 +127,7 @@
                class="whitespace-nowrap rounded-md px-3 py-1.5 font-medium {% if request.endpoint == 'admin.users' %}bg-blue-50 text-blue-800{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">Users</a>
           {% endif %}
           <span class="mx-1 h-4 w-px shrink-0 bg-slate-200" aria-hidden="true"></span>
-          <a href="{{ url_for('public.home') }}" class="whitespace-nowrap rounded-md px-3 py-1.5 font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900">Public site ↗</a>
+          <a href="{{ url_for('public.preview', next='/') }}" class="whitespace-nowrap rounded-md px-3 py-1.5 font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900">Public site ↗</a>
         {% else %}
           <a href="{{ url_for('public.home') }}"
              class="whitespace-nowrap rounded-md px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">Home</a>
@@ -184,7 +195,7 @@
           <ul class="mt-3 space-y-2 text-sm text-slate-600">
             <li>{{ current_user.display_name }}</li>
             <li class="text-xs">{{ current_user.email }}</li>
-            <li><a class="font-semibold text-blue-700 hover:text-blue-800" href="{{ url_for('public.home') }}">View public site ↗</a></li>
+            <li><a class="font-semibold text-blue-700 hover:text-blue-800" href="{{ url_for('public.preview', next='/') }}">View public site ↗</a></li>
             <li>
               <form method="post" action="{{ url_for('admin.logout') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

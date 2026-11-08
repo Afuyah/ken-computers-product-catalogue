@@ -32,7 +32,7 @@
       </div>
     </a>
 
-    {% if current_user.is_authenticated %}
+    {% if staff_mode %}
       <div class="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 text-[11px] font-semibold">
         <a href="{{ url_for('admin.product_edit', product_id=product.id) }}"
            class="flex items-center justify-center gap-1 py-2 text-slate-600 hover:bg-blue-50 hover:text-blue-700"

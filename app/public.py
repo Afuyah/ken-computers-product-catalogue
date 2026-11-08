@@ -13,15 +13,17 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
+from flask_login import current_user
 from sqlalchemy import func, select
 
 from .extensions import db
 from .models import Category, Product, ProductSlug
 from .search import build_query
 from .storage import storage_is_local
-from .utils import truncate
+from .utils import safe_next, truncate
 
 bp = Blueprint("public", __name__)
 
@@ -205,6 +207,15 @@ def healthz():
     return {"status": "ok"}
 
 
+@bp.get("/preview")
+def preview():
+    """Toggle the customer view for a signed-in staff member."""
+    if not current_user.is_authenticated:
+        abort(404)
+    session["staff_preview"] = not session.get("staff_preview", False)
+    return redirect(safe_next(request.args.get("next"), url_for("public.home")))
+
+
 # ---------------------------------------------------------------------------
 # Local media serving (development only; production uses the CDN)
 # ---------------------------------------------------------------------------
@@ -300,6 +311,8 @@ def inject_site():
         "contact_email": cfg["CONTACT_EMAIL"],
         "contact_location": cfg["CONTACT_LOCATION"],
         "cdn_base_url": cfg["CDN_BASE_URL"],
+        "staff_mode": current_user.is_authenticated
+        and not session.get("staff_preview", False),
         "meta_description": truncate(
             f"{cfg['SITE_NAME']} — laptops, printers and accessories in "
             f"{cfg['CONTACT_LOCATION']}. Genuine stock, clear prices.",
