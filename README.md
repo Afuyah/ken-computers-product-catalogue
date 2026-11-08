@@ -135,6 +135,11 @@ Staff sign in from the **Staff login** button in the header. Downloads are
 enforced server-side (`/d/<id>` and `/p/<slug>/download` require a session), so
 hiding the buttons is not the only protection.
 
+While signed in the whole site switches into **staff mode**: the header
+navigation becomes Dashboard / Products / Add product / Categories / Share
+links, the footer becomes management links, and every product card gains
+**Edit / Share / ZIP** actions. Signing out returns the customer view.
+
 ---
 
 ## 4. Media storage: Cloudflare R2

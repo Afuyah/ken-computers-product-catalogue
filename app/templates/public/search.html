@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% from "public/_macros.html" import product_card, pagination_nav %}
+{% from "public/_macros.html" import product_card, pagination_nav with context %}
 {% block title %}{% if q %}Search: {{ q }}{% else %}All products{% endif %} — {{ site_name }}{% endblock %}
 
 {% block content %}
@@ -67,7 +67,11 @@
     </p>
     <div class="mt-4 flex flex-wrap justify-center gap-2">
       <a class="btn-outline" href="{{ url_for('public.search') }}">Browse everything</a>
-      <a class="btn-whatsapp" href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+      {% if current_user.is_authenticated %}
+        <a class="btn-primary" href="{{ url_for('admin.product_new') }}">+ Add this product</a>
+      {% else %}
+        <a class="btn-whatsapp" href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+      {% endif %}
     </div>
   </div>
 {% endif %}

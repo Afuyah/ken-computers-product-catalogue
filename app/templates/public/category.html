@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% from "public/_macros.html" import product_card, pagination_nav %}
+{% from "public/_macros.html" import product_card, pagination_nav with context %}
 {% block title %}{{ category.name }} — {{ site_name }}{% endblock %}
 {% block description %}{{ category.description or (category.name ~ ' available at ' ~ site_name ~ ', ' ~ contact_location) }}{% endblock %}
 

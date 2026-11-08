@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% from "public/_macros.html" import product_card %}
+{% from "public/_macros.html" import product_card with context %}
 {% block title %}{{ link.title }} — {{ site_name }}{% endblock %}
 {% block description %}{{ link.note or ('A selection from ' ~ site_name) }}{% endblock %}
 

@@ -35,6 +35,8 @@ check("anonymous sees Order on WhatsApp", "Order on WhatsApp" in anon)
 check("anonymous sees Staff login", "Staff login" in anon)
 check("anonymous cannot see share panel", "Share this item" not in anon)
 check("anonymous cannot see downloads", "All images (ZIP)" not in anon)
+check("anonymous sees customer footer WhatsApp", "Chat on WhatsApp" in anon)
+check("anonymous has no staff workspace", "Staff workspace" not in anon)
 
 client.post(
     "/admin/login",
@@ -47,6 +49,18 @@ check("staff sees number field", 'id="share-phone"' in auth)
 check("staff sees downloads", "All images (ZIP)" in auth)
 check("staff does not see Order on WhatsApp", "Order on WhatsApp" not in auth)
 check("staff sees sign out", "Sign out" in auth)
+check("staff sees staff workspace bar", "Staff workspace" in auth)
+check("staff nav has management links", "Share links" in auth and "Dashboard" in auth)
+check("staff footer drops customer WhatsApp", "Chat on WhatsApp" not in auth)
+check("staff sees Edit product button", "✎ Edit product" in auth)
+
+grid = client.get("/search").get_data(as_text=True)
+check("staff cards expose Edit", "✎ Edit" in grid)
+check("staff cards expose Share", "↗ Share" in grid)
+check("staff cards expose ZIP", "⬇ ZIP" in grid)
+
+anon_grid = app.test_client().get("/search").get_data(as_text=True)
+check("public cards stay clean", "✎ Edit" not in anon_grid and "⬇ ZIP" not in anon_grid)
 
 search = client.get("/search?q=hp").get_data(as_text=True)
 check("search page has filters", 'name="sort"' in search and "Best match" in search)
