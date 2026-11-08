@@ -45,21 +45,21 @@ def search_init() -> None:
 
 
 @click.command("create-owner")
-@click.option("--email", prompt=True)
+@click.option("--username", prompt=True)
 @click.option("--password", prompt=True, hide_input=True, confirmation_prompt=True)
 @click.option("--name", prompt=True, default="Owner")
-def create_owner(email: str, password: str, name: str) -> None:
+def create_owner(username: str, password: str, name: str) -> None:
     """Create the first administrator account."""
-    email = email.strip().lower()
-    if db.session.query(User).filter_by(email=email).first():
-        raise click.ClickException("That email already exists.")
-    if len(password) < 8:
-        raise click.ClickException("Password must be at least 8 characters.")
-    user = User(email=email, name=name.strip()[:120], role="owner", is_active=True)
+    username = username.strip().lower()
+    if not username or not password:
+        raise click.ClickException("Username and password are required.")
+    if db.session.query(User).filter_by(username=username).first():
+        raise click.ClickException("That username already exists.")
+    user = User(username=username, name=name.strip()[:120], role="owner", is_active=True)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
-    click.echo(f"Owner created: {email}")
+    click.echo(f"Owner created: {username}")
 
 
 @click.command("stats")

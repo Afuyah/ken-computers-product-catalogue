@@ -36,7 +36,9 @@ class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    # A simple username, not an email. The underlying column keeps its original
+    # name so existing databases need no migration.
+    username = db.Column("email", db.String(255), unique=True, nullable=False, index=True)
     name = db.Column(db.String(120), nullable=False, default="")
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="staff")  # owner | staff
@@ -57,10 +59,10 @@ class User(UserMixin, db.Model):
 
     @property
     def display_name(self) -> str:
-        return self.name or self.email.split("@")[0]
+        return self.name or self.username
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<User {self.email}>"
+        return f"<User {self.username}>"
 
 
 class Category(db.Model):

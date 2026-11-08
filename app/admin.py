@@ -78,15 +78,15 @@ def login():
         return redirect(url_for("admin.dashboard"))
 
     if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
+        username = (request.form.get("username") or "").strip().lower()
         password = request.form.get("password") or ""
-        user = db.session.scalar(select(User).where(User.email == email))
+        user = db.session.scalar(select(User).where(User.username == username))
         if user and user.is_active and user.check_password(password):
             login_user(user, remember=bool(request.form.get("remember")))
             user.last_login_at = utcnow()
             db.session.commit()
             return redirect(safe_next(request.args.get("next")))
-        flash("Wrong email or password.", "error")
+        flash("Wrong username or password.", "error")
 
     return render_template("admin/login.html")
 
@@ -496,23 +496,23 @@ def users():
 @bp.post("/users")
 @owner_required
 def user_create():
-    email = (request.form.get("email") or "").strip().lower()
+    username = (request.form.get("username") or "").strip().lower()
     password = request.form.get("password") or ""
-    if not email or len(password) < 8:
-        flash("Email and a password of at least 8 characters are required.", "error")
+    if not username or not password:
+        flash("Username and password are required.", "error")
         return redirect(url_for("admin.users"))
-    if db.session.scalar(select(User).where(User.email == email)):
-        flash("That email is already registered.", "error")
+    if db.session.scalar(select(User).where(User.username == username)):
+        flash("That username is already taken.", "error")
         return redirect(url_for("admin.users"))
     user = User(
-        email=email,
+        username=username,
         name=(request.form.get("name") or "").strip()[:120],
         role="staff",
         is_active=True,
     )
     user.set_password(password)
     db.session.add(user)
-    log("create", "user", email)
+    log("create", "user", username)
     db.session.commit()
     flash("User created.", "success")
     return redirect(url_for("admin.users"))
@@ -540,8 +540,8 @@ def user_password(user_id: int):
     if user is None:
         abort(404)
     password = request.form.get("password") or ""
-    if len(password) < 8:
-        flash("Password must be at least 8 characters.", "error")
+    if not password:
+        flash("Enter a new password.", "error")
     else:
         user.set_password(password)
         db.session.commit()

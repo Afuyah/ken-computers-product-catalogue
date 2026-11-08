@@ -18,7 +18,7 @@ from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
 from app.models import Category, Product, ShareLink  # noqa: E402
 
-OWNER_EMAIL = "admin@kencomputersmsa.com"
+OWNER_USERNAME = "admin"
 OWNER_PASSWORD = "ChangeMe123!"
 
 app = create_app()
@@ -77,7 +77,7 @@ for expected_text in ("Ken Computers", "Shop by category"):
 print("\n== admin ==")
 login = client.post(
     "/admin/login",
-    data={"email": OWNER_EMAIL, "password": OWNER_PASSWORD},
+    data={"username": OWNER_USERNAME, "password": OWNER_PASSWORD},
     follow_redirects=True,
 )
 print(f"{'PASS' if login.status_code == 200 else 'FAIL'}  {login.status_code}  POST /admin/login")

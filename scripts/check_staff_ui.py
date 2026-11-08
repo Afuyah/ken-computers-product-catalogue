@@ -40,7 +40,7 @@ check("anonymous has no staff workspace", "Staff workspace" not in anon)
 
 client.post(
     "/admin/login",
-    data={"email": "admin@kencomputersmsa.com", "password": "ChangeMe123!"},
+    data={"username": "admin", "password": "ChangeMe123!"},
     follow_redirects=True,
 )
 auth = client.get(f"/p/{slug}").get_data(as_text=True)

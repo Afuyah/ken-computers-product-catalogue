@@ -56,7 +56,7 @@ Copy-Item .env.example .env
 
 # 3. Database + demo catalogue
 python -m flask --app wsgi init-db
-python -m flask --app wsgi create-owner      # your email + password
+python -m flask --app wsgi create-owner      # your username + password
 python -m flask --app wsgi seed-demo         # 24 sample products with placeholder photos
 
 # (or, no CLI needed at all: creates tables, owner and demo data in one go)
@@ -79,7 +79,7 @@ Open <http://127.0.0.1:5000> for the catalogue and
 > so always use `flask run` locally.
 
 The seed script creates a demo owner account so you can look around
-immediately: **admin@kencomputersmsa.com / ChangeMe123!** — change it
+immediately: **admin / ChangeMe123!** — change it
 before the site goes live (`Users` → set a new password).
 
 Check everything still renders after a change:
@@ -131,9 +131,11 @@ never break.
 | Share panel with WhatsApp number entry | — | ✓ |
 | Admin dashboard | — | ✓ |
 
-Staff sign in from the **Staff login** button in the header. Downloads are
-enforced server-side (`/d/<id>` and `/p/<slug>/download` require a session), so
-hiding the buttons is not the only protection.
+Staff sign in from the **Staff login** button in the header. Accounts are a
+simple **username + password** — no email address is needed and the password
+can be any length. Downloads are enforced server-side (`/d/<id>` and
+`/p/<slug>/download` require a session), so hiding the buttons is not the only
+protection.
 
 While signed in the whole site switches into **staff mode**: the header
 navigation becomes Dashboard / Products / Add product / Categories / Share

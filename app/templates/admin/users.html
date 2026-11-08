@@ -8,17 +8,17 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h2 class="text-sm font-bold">Invite a staff member</h2>
     <div>
-      <label class="label" for="email">Email *</label>
-      <input class="input" id="email" name="email" type="email" required>
+      <label class="label" for="username">Username *</label>
+      <input class="input" id="username" name="username" type="text" required autocomplete="off">
     </div>
     <div>
       <label class="label" for="name">Name</label>
       <input class="input" id="name" name="name" maxlength="120">
     </div>
     <div>
-      <label class="label" for="password">Temporary password *</label>
-      <input class="input" id="password" name="password" type="text" minlength="8" required>
-      <p class="mt-1 text-xs text-slate-500">At least 8 characters. Share it privately, then ask them to change it.</p>
+      <label class="label" for="password">Password *</label>
+      <input class="input" id="password" name="password" type="text" required>
+      <p class="mt-1 text-xs text-slate-500">Any length. Share it privately, then change it here any time.</p>
     </div>
     <button class="btn-primary w-full" type="submit">Create user</button>
   </form>
@@ -39,7 +39,7 @@
             <tr>
               <td class="px-3 py-2">
                 <div class="font-medium">{{ user.display_name }}</div>
-                <div class="text-xs text-slate-500">{{ user.email }}</div>
+                <div class="text-xs text-slate-500">@{{ user.username }}</div>
               </td>
               <td class="px-3 py-2"><span class="badge bg-slate-100 text-slate-600 ring-slate-500/20">{{ user.role }}</span></td>
               <td class="px-3 py-2">
