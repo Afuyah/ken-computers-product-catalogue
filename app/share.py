@@ -16,6 +16,7 @@ from flask import (
     session,
     url_for,
 )
+from flask_login import login_required
 from sqlalchemy import select
 
 from .extensions import db
@@ -55,6 +56,7 @@ def view(token: str):
 
 
 @bp.get("/d/<media_public_id>")
+@login_required
 def download(media_public_id: str):
     media = db.session.scalar(select(Media).where(Media.public_id == media_public_id))
     if media is None:
@@ -84,6 +86,7 @@ def download(media_public_id: str):
 
 
 @bp.get("/p/<slug>/download")
+@login_required
 def download_all(slug: str):
     product = db.session.scalar(select(Product).where(Product.slug == slug))
     if product is None or not product.is_published:

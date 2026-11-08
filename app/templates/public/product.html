@@ -124,23 +124,64 @@
 
     {% if product.summary %}<p class="mt-4 text-sm leading-relaxed text-slate-600">{{ product.summary }}</p>{% endif %}
 
-    <div class="mt-5 flex flex-col gap-2 sm:flex-row">
-      <a href="{{ wa_href }}" target="_blank" rel="noopener" class="btn-whatsapp flex-1">
-        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20z"/></svg>
-        Order on WhatsApp
-      </a>
-      <a href="tel:{{ contact_phone | replace(' ', '') }}" class="btn-outline flex-1">Call {{ contact_phone }}</a>
-    </div>
+    {% if not current_user.is_authenticated %}
+      <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+        <a href="{{ wa_href }}" target="_blank" rel="noopener" class="btn-whatsapp flex-1">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20z"/></svg>
+          Order on WhatsApp
+        </a>
+        <a href="tel:{{ contact_phone | replace(' ', '') }}" class="btn-outline flex-1">Call {{ contact_phone }}</a>
+      </div>
+    {% else %}
+      <div id="share-panel" class="mt-5 rounded-xl border border-slate-200 bg-white p-4"
+           data-title="{{ product.title }}"
+           data-price="{{ product.price_kes | kes }}"
+           data-sku="{{ product.sku }}"
+           data-url="{{ url_for('public.product', slug=product.slug, _external=True) }}">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold">Share this item</h2>
+          <span class="badge bg-blue-50 text-blue-700 ring-blue-600/20">Staff</span>
+        </div>
+        <p class="mt-1 text-xs text-slate-500">Type the customer's WhatsApp number — WhatsApp opens with the links ready to send.</p>
 
-    <a href="{{ url_for('share.download_all', slug=product.slug) }}"
-       class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-      ⬇ Download all images (ZIP)
-    </a>
-    {% if product.primary_image and product.primary_image.file('original') %}
-      <a href="{{ url_for('share.download', media_public_id=product.primary_image.public_id) }}"
-         class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-        ⬇ Download main photo
-      </a>
+        <div class="mt-3 flex gap-2">
+          <input id="share-phone" class="input" type="tel" inputmode="tel" autocomplete="tel" placeholder="0712 345 678" aria-label="WhatsApp number">
+          <button id="share-wa" class="btn-whatsapp whitespace-nowrap" type="button">WhatsApp</button>
+        </div>
+
+        <div class="mt-3 space-y-1.5 text-sm">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="share-include-link" class="h-4 w-4 rounded border-slate-300 text-blue-700" checked>
+            Product link
+          </label>
+          {% for media in product.images %}
+            {% if media.full %}
+              <label class="flex items-center gap-2">
+                <input type="checkbox" class="js-share-photo h-4 w-4 rounded border-slate-300 text-blue-700" value="{{ media.full.url | abs_url }}" checked>
+                Photo {{ loop.index }}
+              </label>
+            {% endif %}
+          {% endfor %}
+          {% for clip in product.videos %}
+            {% if clip.video_file %}
+              <label class="flex items-center gap-2">
+                <input type="checkbox" class="js-share-photo h-4 w-4 rounded border-slate-300 text-blue-700" value="{{ clip.video_file.url | abs_url }}" checked>
+                Video {{ loop.index }}
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <button id="share-copy" class="btn-outline mt-3 w-full" type="button">Copy links instead</button>
+        <p id="share-status" class="mt-2 hidden rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800"></p>
+      </div>
+
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        <a href="{{ url_for('share.download_all', slug=product.slug) }}" class="btn-outline">⬇ All images (ZIP)</a>
+        {% if product.primary_image and product.primary_image.file('original') %}
+          <a href="{{ url_for('share.download', media_public_id=product.primary_image.public_id) }}" class="btn-outline">⬇ Main photo</a>
+        {% endif %}
+      </div>
     {% endif %}
 
     {% if product.stock_note %}
@@ -188,5 +229,79 @@
       if (image) { image.src = button.getAttribute('data-src'); }
     });
   });
+
+  (function () {
+    var panel = document.getElementById('share-panel');
+    if (!panel) { return; }
+
+    var phone = document.getElementById('share-phone');
+    var saved = window.localStorage.getItem('kcm_share_phone');
+    if (saved) { phone.value = saved; }
+
+    function selectedPhotos() {
+      return Array.prototype.slice
+        .call(document.querySelectorAll('.js-share-photo:checked'))
+        .map(function (box) { return box.value; });
+    }
+
+    function buildMessage() {
+      var lines = [];
+      if (document.getElementById('share-include-link').checked) {
+        lines.push(panel.dataset.title);
+        lines.push(panel.dataset.price + ' · ' + panel.dataset.sku);
+        lines.push(panel.dataset.url);
+      }
+      var photos = selectedPhotos();
+      if (photos.length) {
+        if (lines.length) { lines.push(''); }
+        lines.push(photos.length === 1 ? 'Photo:' : 'Photos:');
+        lines = lines.concat(photos);
+      }
+      return lines.join('\n');
+    }
+
+    function normaliseNumber(raw) {
+      var digits = (raw || '').replace(/[^0-9]/g, '');
+      if (digits.indexOf('0') === 0) { digits = '254' + digits.slice(1); }
+      else if (digits.length === 9) { digits = '254' + digits; }
+      return digits;
+    }
+
+    document.getElementById('share-wa').addEventListener('click', function () {
+      var number = normaliseNumber(phone.value);
+      if (number.length < 10) {
+        phone.focus();
+        phone.classList.add('border-red-400');
+        return;
+      }
+      phone.classList.remove('border-red-400');
+      window.localStorage.setItem('kcm_share_phone', phone.value);
+      var message = buildMessage();
+      if (!message) { return; }
+      window.open(
+        'https://wa.me/' + number + '?text=' + encodeURIComponent(message),
+        '_blank',
+        'noopener'
+      );
+    });
+
+    document.getElementById('share-copy').addEventListener('click', function () {
+      var message = buildMessage();
+      if (!message) { return; }
+      var status = document.getElementById('share-status');
+      function show(text) {
+        status.textContent = text;
+        status.classList.remove('hidden');
+        window.setTimeout(function () { status.classList.add('hidden'); }, 3500);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message).then(function () {
+          show('Links copied — paste them into any WhatsApp chat.');
+        });
+      } else {
+        show(message);
+      }
+    });
+  })();
 </script>
 {% endblock %}

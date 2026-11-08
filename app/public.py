@@ -15,10 +15,11 @@ from flask import (
     send_from_directory,
     url_for,
 )
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 
 from .extensions import db
 from .models import Category, Product, ProductSlug
+from .search import build_query
 from .storage import storage_is_local
 from .utils import truncate
 
@@ -162,25 +163,39 @@ def product(slug: str):
 @bp.get("/search")
 def search():
     q = (request.args.get("q") or "").strip()
-    stmt = _base_query()
-    if q:
-        like = f"%{q}%"
-        stmt = stmt.where(
-            or_(
-                Product.title.ilike(like),
-                Product.brand.ilike(like),
-                Product.sku.ilike(like),
-                Product.summary.ilike(like),
-                Product.description.ilike(like),
-            )
+    category_slug = (request.args.get("category") or "").strip()
+    stock = (request.args.get("stock") or "").strip()
+    sort = request.args.get("sort") or ("relevance" if q else "new")
+
+    category_ids = None
+    if category_slug:
+        category = db.session.scalar(
+            select(Category).where(Category.slug == category_slug)
         )
-    stmt = stmt.order_by(Product.updated_at.desc())
+        if category is not None:
+            category_ids = _category_ids(category)
+
+    stmt = build_query(q, category_ids=category_ids, stock=stock, sort=sort)
     page = request.args.get("page", 1, type=int)
     pagination = db.paginate(
         stmt, page=page, per_page=current_app.config["PRODUCTS_PER_PAGE"], error_out=False
     )
+
+    categories = db.session.scalars(
+        select(Category)
+        .where(Category.parent_id.is_(None), Category.is_active.is_(True))
+        .order_by(Category.sort_order, Category.name)
+    ).all()
+
     return render_template(
-        "public/search.html", q=q, pagination=pagination, products=pagination.items
+        "public/search.html",
+        q=q,
+        pagination=pagination,
+        products=pagination.items,
+        categories=categories,
+        category_slug=category_slug,
+        stock=stock,
+        sort=sort,
     )
 
 

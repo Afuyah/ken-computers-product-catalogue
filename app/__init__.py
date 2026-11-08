@@ -28,6 +28,10 @@ def create_app(config_object: type | None = None) -> Flask:
     app.register_blueprint(share.bp)
     app.register_blueprint(admin.bp)
 
+    from .search import configure_search
+
+    configure_search(app)
+
     from . import cli
 
     cli.register(app)
@@ -36,6 +40,17 @@ def create_app(config_object: type | None = None) -> Flask:
     app.jinja_env.filters["kes"] = format_kes
     app.jinja_env.filters["bytes"] = human_bytes
     app.jinja_env.filters["summary"] = truncate
+
+    @app.template_filter("abs_url")
+    def absolute_url(value: str | None) -> str:
+        """Turn a relative media path into a full URL (for WhatsApp sharing)."""
+        if not value:
+            return ""
+        if value.startswith(("http://", "https://")):
+            return value
+        from flask import request
+
+        return f"{request.url_root.rstrip('/')}{value}"
 
     @app.context_processor
     def inject_globals():

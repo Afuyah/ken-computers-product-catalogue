@@ -56,8 +56,8 @@ public_checks = [
 ]
 if product_slug:
     public_checks.append((f"/p/{product_slug}", 200))
-    if has_images:
-        public_checks.append((f"/p/{product_slug}/download", 200))
+    # Downloads are staff-only now: anonymous visitors get redirected to login.
+    public_checks.append((f"/p/{product_slug}/download", 302))
 if category_slug:
     public_checks.append((f"/c/{category_slug}", 200))
 

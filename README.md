@@ -121,6 +121,20 @@ Deleted products remove their files from storage. Old product URLs keep working
 via a 301 redirect (`product_slugs` table) so links already sent to customers
 never break.
 
+### Staff vs public
+
+| | Visitor | Signed in |
+|---|---|---|
+| Prices, photos, specs | ✓ | ✓ |
+| “Order on WhatsApp” / call buttons | ✓ | hidden |
+| Download photos / ZIP | hidden **and blocked by the server** | ✓ |
+| Share panel with WhatsApp number entry | — | ✓ |
+| Admin dashboard | — | ✓ |
+
+Staff sign in from the **Staff login** button in the header. Downloads are
+enforced server-side (`/d/<id>` and `/p/<slug>/download` require a session), so
+hiding the buttons is not the only protection.
+
 ---
 
 ## 4. Media storage: Cloudflare R2
@@ -269,7 +283,30 @@ your server small); otherwise upload an already-compressed `.mp4`.
 
 ---
 
-## 8. Backups
+## 8. Search
+
+Search runs on PostgreSQL itself — no separate cluster to pay for or keep in sync.
+
+- A stored `search_vector` column weights title/SKU (A), brand (B), summary and
+  specs (C), description (D).
+- A GIN index answers full-text queries in milliseconds.
+- `pg_trgm` adds partial and typo tolerance: `eliteb` and `elitbok` both find the
+  EliteBook.
+- Queries like `16gb` are normalised to `16 gb` so they match the spec text.
+- Category, stock, price and sorting compose with the same query builder.
+
+Indexes are created automatically on boot by `init-db`. To recreate them:
+
+```powershell
+python -m flask --app wsgi search-init
+```
+
+Everything search-related lives in `app/search.py`. If the catalogue ever
+outgrows PostgreSQL — roughly past 50,000 SKUs, or when you need multi-language
+analysers or hand-tuned relevance — replace that one module with Elasticsearch
+or Meilisearch. Until then a separate cluster is cost and sync lag for no gain.
+
+## 9. Backups
 
 Postgres is the only thing you cannot rebuild from files.
 
@@ -285,7 +322,7 @@ an extra safety net against accidental deletes.
 
 ---
 
-## 9. Going-live checklist
+## 10. Going-live checklist
 
 - [ ] `SECRET_KEY` is a long random value, not the default
 - [ ] `SITE_URL=https://kencomputersmsa.com`
@@ -301,12 +338,12 @@ an extra safety net against accidental deletes.
 
 ---
 
-## 10. Deliberate limits (and the upgrade path)
+## 11. Deliberate limits (and the upgrade path)
 
 | Now | Later, if needed |
 |---|---|
 | `db.create_all()` via `init-db` | Adopt Alembic (`flask db init`) before the first schema change |
-| Search via `ILIKE` | Postgres `tsvector` + GIN index — fine well past 2,000 rows |
+| Postgres full-text + trigram search | Swap `app/search.py` for Elasticsearch/Meilisearch past ~50k SKUs |
 | No stock quantities | Add `stock_qty` and decrement on order |
 | No cart/checkout | Add orders, M-Pesa STK push, or link to an existing POS |
 | Images processed in-request | Move uploads to a job table + worker if uploads get heavy |

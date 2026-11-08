@@ -16,6 +16,7 @@ from .utils import make_slug
 
 def register(app: Flask) -> None:
     app.cli.add_command(init_db)
+    app.cli.add_command(search_init)
     app.cli.add_command(create_owner)
     app.cli.add_command(seed_demo)
     app.cli.add_command(stats)
@@ -23,9 +24,24 @@ def register(app: Flask) -> None:
 
 @click.command("init-db")
 def init_db() -> None:
-    """Create all tables (first run / local development)."""
+    """Create all tables and search indexes (safe to run on every boot)."""
     db.create_all()
     click.echo("Tables created.")
+
+    from .search import ensure_search_indexes
+
+    applied = ensure_search_indexes()
+    if applied:
+        click.echo(f"Search ready ({', '.join(applied)}).")
+
+
+@click.command("search-init")
+def search_init() -> None:
+    """(Re)create the full-text and trigram indexes."""
+    from .search import ensure_search_indexes
+
+    applied = ensure_search_indexes()
+    click.echo(f"Search indexes: {', '.join(applied) or 'not available on this database'}")
 
 
 @click.command("create-owner")
