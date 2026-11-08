@@ -363,3 +363,84 @@ class AuditLog(db.Model):
     entity_id = db.Column(db.String(40))
     detail = db.Column(db.JSON, default=dict)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
+
+
+BANNER_THEMES = {
+    "blue": "from-blue-600 via-blue-700 to-slate-900",
+    "emerald": "from-emerald-500 via-emerald-700 to-slate-900",
+    "slate": "from-slate-600 via-slate-800 to-black",
+    "amber": "from-amber-400 via-orange-600 to-slate-900",
+    "rose": "from-rose-500 via-rose-700 to-slate-900",
+}
+
+
+class Banner(db.Model):
+    """An advertising slide for the home page hero."""
+
+    __tablename__ = "banners"
+
+    id = db.Column(db.Integer, primary_key=True)
+    eyebrow = db.Column(db.String(60), nullable=False, default="")
+    headline = db.Column(db.String(140), nullable=False)
+    subtext = db.Column(db.String(260), nullable=False, default="")
+    cta_label = db.Column(db.String(40), nullable=False, default="")
+    cta_url = db.Column(db.String(300), nullable=False, default="")
+    secondary_label = db.Column(db.String(40), nullable=False, default="")
+    secondary_url = db.Column(db.String(300), nullable=False, default="")
+
+    theme = db.Column(db.String(20), nullable=False, default="blue")
+    align = db.Column(db.String(10), nullable=False, default="left")
+
+    image_key = db.Column(db.String(400), nullable=False, default="")
+    image_key_sm = db.Column(db.String(400), nullable=False, default="")
+    image_alt = db.Column(db.String(200), nullable=False, default="")
+    lqip = db.Column(db.Text, default="")
+
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+    is_active = db.Column(db.Boolean, nullable=False, default=True, index=True)
+    starts_at = db.Column(db.Date)
+    ends_at = db.Column(db.Date)
+
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    updated_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    @property
+    def gradient(self) -> str:
+        return BANNER_THEMES.get(self.theme, BANNER_THEMES["blue"])
+
+    @property
+    def image_url(self) -> str:
+        if not self.image_key:
+            return ""
+        from .storage import get_storage
+
+        return get_storage().url(self.image_key)
+
+    @property
+    def image_small_url(self) -> str:
+        if not self.image_key_sm:
+            return self.image_url
+        from .storage import get_storage
+
+        return get_storage().url(self.image_key_sm)
+
+    @property
+    def is_centered(self) -> bool:
+        return self.align == "center"
+
+    def is_live(self, today=None) -> bool:
+        from datetime import date
+
+        today = today or date.today()
+        if not self.is_active:
+            return False
+        if self.starts_at and self.starts_at > today:
+            return False
+        if self.ends_at and self.ends_at < today:
+            return False
+        return True
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<Banner {self.headline!r}>"

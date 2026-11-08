@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'New banner' if is_new else 'Edit banner' }}{% endblock %}
+{% block heading %}{{ 'New banner' if is_new else 'Edit banner' }}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="grid gap-5 lg:grid-cols-3"
+      action="{{ url_for('admin.banner_new') if is_new else url_for('admin.banner_edit', banner_id=banner.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="space-y-5 lg:col-span-2">
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-sm font-bold">Content</h2>
+      <div class="mt-3 space-y-3">
+        <div>
+          <label class="label" for="eyebrow">Eyebrow (small label)</label>
+          <input class="input" id="eyebrow" name="eyebrow" maxlength="60" value="{{ banner.eyebrow }}"
+                 placeholder="e.g. Back to school offer">
+        </div>
+        <div>
+          <label class="label" for="headline">Headline *</label>
+          <input class="input" id="headline" name="headline" maxlength="140" required value="{{ banner.headline }}"
+                 placeholder="e.g. Save up to 20% on business laptops">
+        </div>
+        <div>
+          <label class="label" for="subtext">Supporting text</label>
+          <textarea class="input min-h-[4rem]" id="subtext" name="subtext" maxlength="260"
+                    placeholder="One or two short lines">{{ banner.subtext }}</textarea>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label class="label" for="cta_label">Primary button label</label>
+            <input class="input" id="cta_label" name="cta_label" maxlength="40" value="{{ banner.cta_label }}"
+                   placeholder="Shop the offer">
+          </div>
+          <div>
+            <label class="label" for="cta_url">Primary button link</label>
+            <input class="input" id="cta_url" name="cta_url" maxlength="300" value="{{ banner.cta_url }}"
+                   placeholder="/search?q=hp">
+          </div>
+          <div>
+            <label class="label" for="secondary_label">Second button label</label>
+            <input class="input" id="secondary_label" name="secondary_label" maxlength="40" value="{{ banner.secondary_label }}"
+                   placeholder="Talk to us">
+          </div>
+          <div>
+            <label class="label" for="secondary_url">Second button link</label>
+            <input class="input" id="secondary_url" name="secondary_url" maxlength="300" value="{{ banner.secondary_url }}"
+                   placeholder="https://wa.me/254...">
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">Links can be a path like <code class="rounded bg-slate-100 px-1">/c/laptops</code>, or a full https:// address.</p>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-sm font-bold">Background image</h2>
+      <p class="mt-1 text-xs text-slate-500">Optional. 1600×700 or wider works best. Without one, the gradient below is used.</p>
+
+      {% if banner.image_url %}
+        <div class="mt-3 overflow-hidden rounded-lg border border-slate-200">
+          <img src="{{ banner.image_url }}" alt="" class="h-40 w-full object-cover">
+        </div>
+        <label class="mt-2 flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" name="remove_image" class="h-4 w-4 rounded border-slate-300 text-red-600">
+          Remove this image
+        </label>
+      {% endif %}
+
+      <div class="mt-3 grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="label" for="image">Upload image</label>
+          <input class="input" id="image" name="image" type="file" accept="image/*">
+        </div>
+        <div>
+          <label class="label" for="image_alt">Image description</label>
+          <input class="input" id="image_alt" name="image_alt" maxlength="200" value="{{ banner.image_alt }}"
+                 placeholder="For screen readers">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="space-y-5">
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-sm font-bold">Look &amp; feel</h2>
+      <div class="mt-3 space-y-3">
+        <div>
+          <label class="label" for="theme">Gradient</label>
+          <select class="input" id="theme" name="theme">
+            {% for name in themes %}
+              <option value="{{ name }}" {% if banner.theme == name %}selected{% endif %}>{{ name | capitalize }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="label" for="align">Text alignment</label>
+          <select class="input" id="align" name="align">
+            <option value="left" {% if banner.align == 'left' %}selected{% endif %}>Left</option>
+            <option value="center" {% if banner.align == 'center' %}selected{% endif %}>Centered</option>
+          </select>
+        </div>
+        <div class="overflow-hidden rounded-lg">
+          <div class="flex h-20 items-center justify-center bg-gradient-to-br {{ banner.gradient }} text-xs font-semibold text-white">
+            {{ banner.theme | capitalize }} gradient
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-sm font-bold">Schedule</h2>
+      <div class="mt-3 space-y-3">
+        <div>
+          <label class="label" for="starts_at">Starts</label>
+          <input class="input" id="starts_at" name="starts_at" type="date"
+                 value="{{ banner.starts_at.isoformat() if banner.starts_at else '' }}">
+        </div>
+        <div>
+          <label class="label" for="ends_at">Ends</label>
+          <input class="input" id="ends_at" name="ends_at" type="date"
+                 value="{{ banner.ends_at.isoformat() if banner.ends_at else '' }}">
+        </div>
+        <p class="text-xs text-slate-500">Leave blank to run indefinitely.</p>
+      </div>
+    </section>
+
+    <section class="rounded-xl border border-slate-200 bg-white p-4">
+      <h2 class="text-sm font-bold">Visibility</h2>
+      <div class="mt-3 space-y-2 text-sm">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="is_active" class="h-4 w-4 rounded border-slate-300 text-blue-700"
+                 {% if banner.is_active %}checked{% endif %}>
+          Active
+        </label>
+        <div>
+          <label class="label" for="sort_order">Order</label>
+          <input class="input" id="sort_order" name="sort_order" type="number" value="{{ banner.sort_order }}">
+        </div>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-2">
+      <button class="btn-primary w-full" type="submit">{{ 'Create banner' if is_new else 'Save banner' }}</button>
+      <a class="btn-outline w-full" href="{{ url_for('admin.banners') }}">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

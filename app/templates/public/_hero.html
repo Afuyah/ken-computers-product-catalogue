@@ -1,0 +1,103 @@
+{% macro hero(banners) %}
+<section class="relative overflow-hidden rounded-2xl bg-slate-900 text-white ring-1 ring-black/5 sm:rounded-3xl" data-hero>
+  <div class="relative min-h-[440px] sm:min-h-[470px] lg:min-h-[520px]">
+    {% if banners %}
+      {% for banner in banners %}
+        <article class="hero-slide absolute inset-0 {% if loop.first %}is-active{% endif %}"
+                 data-slide aria-hidden="{{ 'false' if loop.first else 'true' }}">
+          {% if banner.image_url %}
+            <img src="{{ banner.image_url }}" alt="{{ banner.image_alt }}"
+                 class="absolute inset-0 h-full w-full object-cover"
+                 {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                 decoding="async">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/70 to-slate-950/10"></div>
+          {% else %}
+            <div class="absolute inset-0 bg-gradient-to-br {{ banner.gradient }}"></div>
+            <div class="absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
+            <div class="absolute -bottom-24 right-32 h-72 w-72 rounded-full bg-black/20 blur-3xl"></div>
+          {% endif %}
+
+          <div class="relative flex h-full min-h-[440px] items-center px-6 py-12 sm:min-h-[470px] sm:px-10 lg:min-h-[520px] lg:px-14">
+            <div class="max-w-2xl {% if banner.is_centered %}mx-auto text-center{% endif %}">
+              {% if banner.eyebrow %}
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white ring-1 ring-inset ring-white/20">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-300"></span>{{ banner.eyebrow }}
+                </span>
+              {% endif %}
+              <h1 class="mt-5 text-3xl font-black leading-[1.05] tracking-tight sm:text-4xl lg:text-6xl">{{ banner.headline }}</h1>
+              {% if banner.subtext %}
+                <p class="mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base {% if banner.is_centered %}mx-auto{% endif %}">{{ banner.subtext }}</p>
+              {% endif %}
+              {% if banner.cta_label or banner.secondary_label %}
+                <div class="mt-7 flex flex-wrap gap-3 {% if banner.is_centered %}justify-center{% endif %}">
+                  {% if banner.cta_label %}
+                    <a href="{{ banner.cta_url or url_for('public.search') }}"
+                       class="btn bg-white text-slate-900 shadow-sm hover:bg-slate-100">{{ banner.cta_label }}</a>
+                  {% endif %}
+                  {% if banner.secondary_label %}
+                    <a href="{{ banner.secondary_url or '#' }}"
+                       class="btn bg-white/10 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20">{{ banner.secondary_label }}</a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    {% else %}
+      <article class="hero-slide is-active absolute inset-0" data-slide aria-hidden="false">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-slate-900"></div>
+        <div class="absolute -right-20 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute -bottom-24 right-32 h-72 w-72 rounded-full bg-black/20 blur-3xl"></div>
+        <div class="relative flex h-full min-h-[440px] items-center px-6 py-12 sm:min-h-[470px] sm:px-10 lg:min-h-[520px] lg:px-14">
+          <div class="max-w-2xl">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-white ring-1 ring-inset ring-white/20">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-300"></span>Mombasa · Countrywide delivery
+            </span>
+            <h1 class="mt-5 text-3xl font-black leading-[1.05] tracking-tight sm:text-4xl lg:text-6xl">
+              Laptops, printers &amp; accessories —<span class="text-blue-200"> priced clearly.</span>
+            </h1>
+            <p class="mt-4 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
+              Genuine business laptops, gaming machines, printers and the consumables that keep them running.
+              {{ total }} items in stock and ready to ship.
+            </p>
+            <div class="mt-7 flex flex-wrap gap-3">
+              <a href="{{ url_for('public.search') }}" class="btn bg-white text-slate-900 shadow-sm hover:bg-slate-100">Browse the catalogue</a>
+              {% if staff_mode %}
+                <a href="{{ url_for('admin.product_new') }}" class="btn bg-white/10 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20">+ Add product</a>
+              {% else %}
+                <a href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener"
+                   class="btn bg-white/10 text-white ring-1 ring-inset ring-white/25 hover:bg-white/20">Ask for a quote</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </article>
+    {% endif %}
+  </div>
+
+  {% if staff_mode %}
+    <a href="{{ url_for('admin.banners') }}"
+       class="absolute right-3 top-3 rounded-full bg-black/30 px-3 py-1.5 text-[11px] font-semibold text-white/90 ring-1 ring-inset ring-white/20 backdrop-blur hover:bg-black/50">
+      Manage banners
+    </a>
+  {% endif %}
+
+  {% if banners | length > 1 %}
+    <div class="absolute inset-x-0 bottom-5 flex items-center justify-center gap-2">
+      {% for banner in banners %}
+        <button type="button" class="hero-dot {% if loop.first %}is-active{% endif %}"
+                data-hero-dot="{{ loop.index0 }}" aria-label="Show slide {{ loop.index }}"></button>
+      {% endfor %}
+    </div>
+    <button type="button" data-hero-prev aria-label="Previous slide"
+            class="absolute left-3 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/10 p-2.5 text-white ring-1 ring-inset ring-white/20 backdrop-blur transition hover:bg-white/20 sm:flex">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button type="button" data-hero-next aria-label="Next slide"
+            class="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/10 p-2.5 text-white ring-1 ring-inset ring-white/20 backdrop-blur transition hover:bg-white/20 sm:flex">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  {% endif %}
+</section>
+{% endmacro %}

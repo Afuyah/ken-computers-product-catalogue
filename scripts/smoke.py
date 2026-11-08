@@ -89,6 +89,7 @@ admin_checks = [
     "/admin/products",
     "/admin/products/new",
     "/admin/categories",
+    "/admin/banners",
     "/admin/share-links",
     "/admin/users",
 ]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from functools import wraps
 
 from flask import (
@@ -19,6 +19,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import func, or_, select
 from werkzeug.security import generate_password_hash
 
+from .banners import delete_banner_image, save_banner_image
 from .extensions import db
 from .media_service import (
     VideoToolingMissing,
@@ -28,9 +29,11 @@ from .media_service import (
     delete_product_media,
 )
 from .models import (
+    BANNER_THEMES,
     CONDITIONS,
     STOCK_LABELS,
     AuditLog,
+    Banner,
     Category,
     Media,
     Product,
@@ -630,3 +633,135 @@ def share_link_delete(link_id: int):
     db.session.commit()
     flash("Share link deleted.", "success")
     return redirect(url_for("admin.share_links"))
+
+# ---------------------------------------------------------------------------
+# Home page banners (advertising hero)
+# ---------------------------------------------------------------------------
+
+
+def _form_date(name: str):
+    raw = (request.form.get(name) or "").strip()
+    if not raw:
+        return None
+    try:
+        return datetime.strptime(raw, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _safe_link(value: str) -> str:
+    value = (value or "").strip()[:300]
+    if not value:
+        return ""
+    if value.startswith(("/", "http://", "https://", "mailto:", "tel:")):
+        return value
+    return ""
+
+
+def _apply_banner_form(banner: Banner) -> None:
+    banner.headline = (request.form.get("headline") or "").strip()[:140]
+    banner.eyebrow = (request.form.get("eyebrow") or "").strip()[:60]
+    banner.subtext = (request.form.get("subtext") or "").strip()[:260]
+    banner.cta_label = (request.form.get("cta_label") or "").strip()[:40]
+    banner.cta_url = _safe_link(request.form.get("cta_url", ""))
+    banner.secondary_label = (request.form.get("secondary_label") or "").strip()[:40]
+    banner.secondary_url = _safe_link(request.form.get("secondary_url", ""))
+    theme = request.form.get("theme") or "blue"
+    banner.theme = theme if theme in BANNER_THEMES else "blue"
+    banner.align = "center" if request.form.get("align") == "center" else "left"
+    banner.sort_order = request.form.get("sort_order", type=int) or 0
+    banner.is_active = request.form.get("is_active") == "on"
+    banner.starts_at = _form_date("starts_at")
+    banner.ends_at = _form_date("ends_at")
+    banner.image_alt = (request.form.get("image_alt") or "").strip()[:200]
+
+    file = request.files.get("image")
+    if file and file.filename:
+        try:
+            save_banner_image(banner, file.read())
+        except Exception as exc:  # noqa: BLE001 - show the admin why it failed
+            current_app.logger.exception("Banner image failed")
+            flash(f"Image could not be processed: {exc}", "error")
+    elif request.form.get("remove_image") == "on":
+        delete_banner_image(banner, commit=False)
+
+
+@bp.get("/banners")
+@login_required
+def banners():
+    items = db.session.scalars(
+        select(Banner).order_by(Banner.sort_order, Banner.id)
+    ).all()
+    return render_template("admin/banners.html", banners=items, today=date.today())
+
+
+@bp.route("/banners/new", methods=["GET", "POST"])
+@login_required
+def banner_new():
+    banner = Banner(headline="", theme="blue", align="left", is_active=True, sort_order=0)
+    if request.method == "POST":
+        _apply_banner_form(banner)
+        if not banner.headline:
+            flash("A headline is required.", "error")
+        else:
+            db.session.add(banner)
+            db.session.flush()
+            log("create", "banner", banner.id, {"headline": banner.headline})
+            db.session.commit()
+            flash("Banner created.", "success")
+            return redirect(url_for("admin.banners"))
+    return render_template(
+        "admin/banner_form.html", banner=banner, is_new=True, themes=BANNER_THEMES
+    )
+
+
+@bp.route("/banners/<int:banner_id>/edit", methods=["GET", "POST"])
+@login_required
+def banner_edit(banner_id: int):
+    banner = db.session.get(Banner, banner_id)
+    if banner is None:
+        abort(404)
+    if request.method == "POST":
+        _apply_banner_form(banner)
+        if not banner.headline:
+            flash("A headline is required.", "error")
+        else:
+            log("update", "banner", banner.id, {"headline": banner.headline})
+            db.session.commit()
+            flash("Banner saved.", "success")
+            return redirect(url_for("admin.banners"))
+    return render_template(
+        "admin/banner_form.html", banner=banner, is_new=False, themes=BANNER_THEMES
+    )
+
+
+@bp.post("/banners/<int:banner_id>/delete")
+@login_required
+def banner_delete(banner_id: int):
+    banner = db.session.get(Banner, banner_id)
+    if banner is None:
+        abort(404)
+    delete_banner_image(banner, commit=False)
+    log("delete", "banner", banner.id, {"headline": banner.headline})
+    db.session.delete(banner)
+    db.session.commit()
+    flash("Banner deleted.", "success")
+    return redirect(url_for("admin.banners"))
+
+
+@bp.post("/banners/<int:banner_id>/move")
+@login_required
+def banner_move(banner_id: int):
+    banner = db.session.get(Banner, banner_id)
+    if banner is None:
+        abort(404)
+    siblings = list(
+        db.session.scalars(select(Banner).order_by(Banner.sort_order, Banner.id)).all()
+    )
+    index = next((i for i, item in enumerate(siblings) if item.id == banner.id), None)
+    target = index - 1 if request.form.get("direction") == "up" else index + 1
+    if index is not None and 0 <= target < len(siblings):
+        other = siblings[target]
+        banner.sort_order, other.sort_order = other.sort_order, banner.sort_order
+        db.session.commit()
+    return redirect(url_for("admin.banners"))

@@ -1,29 +1,29 @@
 {% macro product_card(product, eager=False) %}
-  <div class="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
+  <div class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
     <a href="{{ url_for('public.product', slug=product.slug) }}" class="flex flex-1 flex-col">
-      <div class="relative aspect-[4/3] overflow-hidden bg-slate-50">
+      <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-white to-slate-50">
         {% if product.primary_image and product.primary_image.card %}
           <img src="{{ product.primary_image.card.url }}"
                alt="{{ product.primary_image.alt or product.title }}"
                {% if eager %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
                decoding="async"
-               class="h-full w-full object-contain p-3 transition duration-300 group-hover:scale-[1.03]">
+               class="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-[1.04]">
         {% else %}
           <div class="grid h-full w-full place-items-center text-4xl text-slate-300">🖼️</div>
         {% endif %}
 
-        <span class="badge absolute left-2 top-2 {{ product.stock_badge_class }}">{{ product.stock_label }}</span>
+        <span class="badge absolute left-2.5 top-2.5 {{ product.stock_badge_class }}">{{ product.stock_label }}</span>
         {% if product.discount_percent %}
-          <span class="absolute right-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">-{{ product.discount_percent }}%</span>
+          <span class="absolute right-2.5 top-2.5 rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">-{{ product.discount_percent }}%</span>
         {% endif %}
       </div>
 
-      <div class="flex flex-1 flex-col gap-1 p-3">
-        {% if product.brand %}<span class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ product.brand }}</span>{% endif %}
-        <h3 class="line-clamp-2 text-sm font-semibold leading-snug text-slate-800 group-hover:text-blue-700">{{ product.title }}</h3>
-        <div class="mt-auto pt-2">
+      <div class="flex flex-1 flex-col gap-1 p-3.5">
+        {% if product.brand %}<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{{ product.brand }}</span>{% endif %}
+        <h3 class="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-800 group-hover:text-blue-700 sm:text-sm">{{ product.title }}</h3>
+        <div class="mt-auto pt-2.5">
           <div class="flex items-baseline gap-2">
-            <span class="text-base font-bold text-slate-900">{{ product.price_kes | kes }}</span>
+            <span class="text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ product.price_kes | kes }}</span>
             {% if product.price_was_kes %}
               <span class="text-xs text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
             {% endif %}

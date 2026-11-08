@@ -142,6 +142,21 @@ navigation becomes Dashboard / Products / Add product / Categories / Share
 links, the footer becomes management links, and every product card gains
 **Edit / Share / ZIP** actions. Signing out returns the customer view.
 
+### Home banners (advertising hero)
+
+The top of the home page is an admin-managed carousel. **Banners** in the
+sidebar lets you create slides with an eyebrow, headline, supporting text, up to
+two buttons, a gradient or a background photo, and an optional start/end date so
+a promotion switches itself on and off.
+
+- No banners → the built-in hero is shown.
+- One banner → a static hero, no arrows or dots.
+- Photos are converted to 1600 px and 800 px WebP on upload.
+- Slides advance every 6.5 s, pause on hover or focus, and respect
+  `prefers-reduced-motion`.
+- Buttons accept a path (`/c/laptops`) or a full `https://` link; anything else
+  is rejected.
+
 ---
 
 ## 4. Media storage: Cloudflare R2

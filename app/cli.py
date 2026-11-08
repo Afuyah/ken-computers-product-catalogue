@@ -10,7 +10,7 @@ from flask import Flask
 from PIL import Image, ImageDraw
 
 from .extensions import db
-from .models import Category, Media, Product, ShareLink, User
+from .models import Banner, Category, Media, Product, ShareLink, User
 from .utils import make_slug
 
 
@@ -233,6 +233,44 @@ def seed_demo(products: int, images: int) -> None:
 
     db.session.commit()
     click.echo(f"Seeded {made} product(s) with {images} image(s) each.")
+
+    if db.session.query(Banner).count() == 0:
+        banners = [
+            Banner(
+                eyebrow="New arrivals",
+                headline="Business laptops that mean business",
+                subtext="EliteBooks, ThinkPads and Latitudes — configured, tested and ready to work.",
+                cta_label="Shop laptops",
+                cta_url="/c/laptops",
+                secondary_label="See everything",
+                secondary_url="/search",
+                theme="blue",
+                sort_order=0,
+            ),
+            Banner(
+                eyebrow="Printers & ink",
+                headline="Keep the office printing",
+                subtext="Laser printers, ink tanks and genuine toner at wholesale prices.",
+                cta_label="Shop printers",
+                cta_url="/c/printers",
+                secondary_label="Toners & ink",
+                secondary_url="/c/accessories",
+                theme="emerald",
+                sort_order=1,
+            ),
+            Banner(
+                eyebrow="Genuine stock",
+                headline="Warranty on every unit we sell",
+                subtext="New and refurbished stock, checked by our technicians before dispatch.",
+                cta_label="Browse the catalogue",
+                cta_url="/search",
+                theme="slate",
+                sort_order=2,
+            ),
+        ]
+        db.session.add_all(banners)
+        db.session.commit()
+        click.echo(f"Seeded {len(banners)} home banner(s).")
 
 
 __all__ = ["register"]

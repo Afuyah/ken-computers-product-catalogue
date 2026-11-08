@@ -19,6 +19,7 @@ from flask import (
 from flask_login import current_user
 from sqlalchemy import func, select
 
+from .banners import live_banners
 from .extensions import db
 from .models import Category, Product, ProductSlug
 from .search import build_query
@@ -104,6 +105,7 @@ def home():
         categories=categories,
         counts=counts,
         total=total,
+        banners=live_banners(),
     )
 
 
