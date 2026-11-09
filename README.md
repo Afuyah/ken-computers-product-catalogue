@@ -289,6 +289,36 @@ whose checksum is new. Categories are created from the `category` column.
 Videos are transcoded when `ffmpeg` is installed locally (recommended — keeps
 your server small); otherwise upload an already-compressed `.mp4`.
 
+### Importing laptops from the POS database
+
+`scripts/pos_import.py` copies laptops straight out of the Ken Computers POS
+database. It reads the POS **read-only** and never writes unless you pass
+`--apply`.
+
+```powershell
+$env:POS_DATABASE_URL = "postgresql://..."
+python scripts/pos_import.py --dry-run      # preview counts and sample rows
+python scripts/pos_import.py --apply        # clear catalogue + import
+python scripts/pos_import.py --refresh-text # regenerate descriptions only
+```
+
+What it does:
+
+- takes only `item_type = 'Laptop'` rows that are not deleted;
+- turns products with variants into one catalogue item per variant, because
+  that is where the real price, stock and specs live;
+- maps stock: `0 → out_of_stock`, `1–4 → low_stock`, `5+ → in_stock`;
+- treats POS prices below 5,000 KES as “not set” (the POS uses `100.00` as a
+  placeholder) and imports them as `0`, which the site renders as
+  **Ask for price**;
+- sanitises names — slashes and control characters removed, `COI5` → `Core i5`,
+  `128SSD` → `128GB SSD`, trailing codes like `TKMMM` stripped;
+- creates a `Laptops` category with one child per brand;
+- generates a short description for every laptop;
+- imports inactive POS items as drafts (unpublished);
+- `--apply` clears products, media, categories, banners and share links first
+  (staff accounts are kept).
+
 ---
 
 ## 7. Speed checklist (already implemented)

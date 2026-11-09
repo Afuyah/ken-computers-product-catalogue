@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -40,7 +41,10 @@ check("anonymous has no staff workspace", "Staff workspace" not in anon)
 
 client.post(
     "/admin/login",
-    data={"username": "admin", "password": "ChangeMe123!"},
+    data={
+        "username": os.getenv("SMOKE_USERNAME", "admin"),
+        "password": os.getenv("SMOKE_PASSWORD", "ChangeMe123!"),
+    },
     follow_redirects=True,
 )
 auth = client.get(f"/p/{slug}").get_data(as_text=True)

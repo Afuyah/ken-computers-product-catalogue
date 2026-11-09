@@ -97,12 +97,29 @@ def home():
             .group_by(Product.category_id)
         ).all()
     )
+    # Roll child counts up so a parent category shows its true total.
+    for category in categories:
+        if category.children:
+            counts[category.id] = counts.get(category.id, 0) + sum(
+                counts.get(child.id, 0) for child in category.children
+            )
+
+    # A single top-level category with children (Laptops > HP, Dell…) reads
+    # better as a brand grid on the home page.
+    brand_view = len(categories) == 1 and bool(categories[0].children)
+    display_categories = (
+        [child for child in categories[0].children if child.is_active]
+        if brand_view
+        else categories
+    )
+
     total = db.session.scalar(select(func.count(Product.id)).where(_published())) or 0
     return render_template(
         "public/home.html",
         featured=featured,
         latest=latest,
-        categories=categories,
+        categories=display_categories,
+        brand_view=brand_view,
         counts=counts,
         total=total,
         banners=live_banners(),

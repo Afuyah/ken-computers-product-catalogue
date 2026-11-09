@@ -8,6 +8,7 @@ Run after `scripts/setup_local.py`:
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
 from app.models import Category, Product, ShareLink  # noqa: E402
 
-OWNER_USERNAME = "admin"
-OWNER_PASSWORD = "ChangeMe123!"
+OWNER_USERNAME = os.getenv("SMOKE_USERNAME", "admin")
+OWNER_PASSWORD = os.getenv("SMOKE_PASSWORD", "ChangeMe123!")
 
 app = create_app()
 app.config["WTF_CSRF_ENABLED"] = False
@@ -70,9 +71,10 @@ for url, expected in public_checks:
         failures.append(f"{url} -> {response.status_code} (expected {expected})")
 
 home = client.get("/").get_data(as_text=True)
-for expected_text in ("Ken Computers", "Shop by category"):
-    if expected_text not in home:
-        failures.append(f"home page missing {expected_text!r}")
+if "Ken Computers" not in home:
+    failures.append("home page missing the brand name")
+if "Shop by brand" not in home and "Shop by category" not in home:
+    failures.append("home page missing the category section")
 
 print("\n== admin ==")
 login = client.post(
