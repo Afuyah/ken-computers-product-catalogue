@@ -87,6 +87,13 @@ BRAND_ALIASES = {
     "razer": "Razer",
     "huawei": "Huawei",
     "fujitsu": "Fujitsu",
+    "elimutab": "ElimuTab",
+    "ipad": "Apple",
+    "infinix": "Infinix",
+    "winro": "Winro",
+    "wr-winro": "Winro",
+    "vision": "Vision",
+    "b2040": "B2040",
 }
 
 CONDITION_LABELS = {
@@ -110,6 +117,8 @@ class Item:
     description: str = ""
     published: bool = True
     source_id: str = ""
+    kind: str = "laptop"
+    group: str = "Laptops"
 
 
 # ---------------------------------------------------------------------------
@@ -206,6 +215,17 @@ def _compact(text: str) -> str:
     return SPACE_RE.sub("", text or "").lower()
 
 
+ADJECTIVES = ("Clean", "Neat", "Well kept", "Excellent", "Grade A")
+
+
+def condition_word(item: Item) -> str:
+    """A friendlier word than "Refurbished" for customer-facing copy."""
+    if item.condition.strip().lower().startswith("new"):
+        return "New"
+    seed = sum(ord(ch) for ch in (item.sku or item.title))
+    return ADJECTIVES[seed % len(ADJECTIVES)]
+
+
 def build_description(item: Item) -> str:
     bits = []
     specs = item.specs
@@ -221,21 +241,13 @@ def build_description(item: Item) -> str:
     if specs.get("Storage") and _compact(specs["Storage"]) not in title_compact:
         bits.append(specs["Storage"])
 
-    sentence = f"{item.condition} {item.title} laptop"
+    sentence = f"{condition_word(item)} {item.title} {item.kind}"
     if bits:
         if len(bits) == 1:
             sentence += f" with {bits[0]}"
         else:
             sentence += " with " + ", ".join(bits[:-1]) + f" and {bits[-1]}"
-    sentence += "."
-
-    warranty = specs.get("Warranty", "")
-    if warranty:
-        warranty_text = warranty.lower().replace(" months", "-month").replace(" month", "-month")
-        sentence += f" Supplied with a {warranty_text} warranty"
-    else:
-        sentence += " Genuine stock, checked before dispatch"
-    sentence += " by Ken Computers MSA, Mombasa."
+    sentence += ". Tested and ready to use by Ken Computers MSA, Mombasa."
     return sentence
 
 
@@ -259,11 +271,11 @@ def fetch_laptops(url: str) -> list[Item]:
     cursor.execute(
         """
         SELECT p.id, p.name, p.sku, p.condition, p.price, p.stock_on_hand,
-               p.warranty_months, p.is_active, p.has_variants, b.name
+               p.warranty_months, p.is_active, p.has_variants, b.name, it.name
         FROM products p
         JOIN item_types it ON it.id = p.item_type_id
         LEFT JOIN brands b ON b.id = p.brand_id
-        WHERE it.name = 'Laptop' AND p.is_deleted = false
+        WHERE it.name IN ('Laptop', 'Tabs') AND p.is_deleted = false
         ORDER BY p.id
         """
     )
@@ -276,7 +288,7 @@ def fetch_laptops(url: str) -> list[Item]:
         FROM product_variants v
         JOIN products p ON p.id = v.product_id
         JOIN item_types it ON it.id = p.item_type_id
-        WHERE it.name = 'Laptop' AND p.is_deleted = false AND v.is_deleted = false
+        WHERE it.name IN ('Laptop', 'Tabs') AND p.is_deleted = false AND v.is_deleted = false
         ORDER BY v.product_id, v.id
         """
     )
@@ -297,10 +309,13 @@ def fetch_laptops(url: str) -> list[Item]:
         is_active,
         has_variants,
         brand_name,
+        type_name,
     ) in products:
         product_variants = variants.get(pid, [])
         base_name = polish_name(clean(expand_processor(clean(name, 140))))
         brand = brand_of(name, brand_name)
+        group = "Laptops" if (type_name or "Laptop") == "Laptop" else "Tablets"
+        kind = "laptop" if group == "Laptops" else "tablet"
 
         if has_variants and product_variants:
             for variant in product_variants:
@@ -335,8 +350,6 @@ def fetch_laptops(url: str) -> list[Item]:
                         if key and value:
                             specs.setdefault(key, value)
                 warranty = v_warranty or warranty_months
-                if warranty:
-                    specs["Warranty"] = f"{int(warranty)} months"
 
                 suffix = ", ".join(
                     part
@@ -362,14 +375,13 @@ def fetch_laptops(url: str) -> list[Item]:
                     specs=specs,
                     published=bool(is_active),
                     source_id=f"variant:{v_sku}",
+                    kind=kind,
+                    group=group,
                 )
                 items.append(item)
             continue
 
         specs = parse_specs(base_name)
-        warranty = warranty_months
-        if warranty:
-            specs["Warranty"] = f"{int(warranty)} months"
         price_value = int(price) if price and price >= PRICE_FLOOR else 0
         item = Item(
             title=clean(base_name, 200),
@@ -381,6 +393,8 @@ def fetch_laptops(url: str) -> list[Item]:
             specs=specs,
             published=bool(is_active),
             source_id=f"product:{pid}",
+            kind=kind,
+            group=group,
         )
         items.append(item)
 
@@ -437,23 +451,26 @@ def clear_catalogue() -> None:
 
 
 def import_items(items: list[Item]) -> dict[str, int]:
-    laptops = Category(
-        name="Laptops", slug="laptops", description="Business, gaming and everyday laptops.", sort_order=0
-    )
-    db.session.add(laptops)
-    db.session.flush()
+    parents: dict[str, Category] = {}
+    for index, group_name in enumerate(dict.fromkeys(item.group for item in items)):
+        parent = Category(name=group_name, slug=make_slug(group_name), sort_order=index)
+        db.session.add(parent)
+        db.session.flush()
+        parents[group_name] = parent
 
-    brand_categories: dict[str, Category] = {}
+    brand_categories: dict[tuple[str, str], Category] = {}
     used_titles: set[str] = set()
     used_slugs: set[str] = set()
     used_skus: set[str] = set()
     stats = {"created": 0, "published": 0, "out": 0, "low": 0, "in": 0}
 
     for order, item in enumerate(items):
-        brand_key = item.brand or "Other"
-        category = brand_categories.get(brand_key)
+        parent = parents[item.group]
+        brand_name = item.brand or "Other"
+        key = (item.group, brand_name)
+        category = brand_categories.get(key)
         if category is None:
-            base_slug = make_slug(f"laptops-{brand_key}")
+            base_slug = make_slug(f"{item.group}-{brand_name}")
             slug = base_slug
             n = 2
             while slug in used_slugs:
@@ -461,14 +478,14 @@ def import_items(items: list[Item]) -> dict[str, int]:
                 n += 1
             used_slugs.add(slug)
             category = Category(
-                name=brand_key, slug=slug, parent_id=laptops.id, sort_order=len(brand_categories)
+                name=brand_name, slug=slug, parent_id=parent.id, sort_order=len(brand_categories)
             )
             db.session.add(category)
             db.session.flush()
-            brand_categories[brand_key] = category
+            brand_categories[key] = category
 
         title = unique_title(item.title, used_titles)
-        base_slug = make_slug(title) or f"laptop-{order}"
+        base_slug = make_slug(title) or f"item-{order}"
         slug = base_slug
         n = 2
         while slug in used_slugs:
@@ -547,7 +564,7 @@ def main() -> int:
         return 2
 
     items = fetch_laptops(args.url)
-    print(f"Read {len(items)} laptop item(s) from the POS.\n")
+    print(f"Read {len(items)} catalogue item(s) from the POS.\n")
 
     brands: dict[str, int] = {}
     for item in items:

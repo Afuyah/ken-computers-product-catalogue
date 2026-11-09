@@ -93,6 +93,7 @@ admin_checks = [
     "/admin/categories",
     "/admin/banners",
     "/admin/share-links",
+    "/admin/settings",
     "/admin/users",
 ]
 if product_id:

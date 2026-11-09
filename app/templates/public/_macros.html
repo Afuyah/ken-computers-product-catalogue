@@ -21,18 +21,20 @@
       <div class="flex flex-1 flex-col gap-1 p-3.5">
         {% if product.brand %}<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{{ product.brand }}</span>{% endif %}
         <h3 class="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-800 group-hover:text-blue-700 sm:text-sm">{{ product.title }}</h3>
-        <div class="mt-auto pt-2.5">
-          <div class="flex items-baseline gap-2">
-            {% if product.price_kes > 0 %}
-              <span class="text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ product.price_kes | kes }}</span>
-              {% if product.price_was_kes %}
-                <span class="text-xs text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
+        {% if show_prices %}
+          <div class="mt-auto pt-2.5">
+            <div class="flex items-baseline gap-2">
+              {% if product.price_kes > 0 %}
+                <span class="text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ product.price_kes | kes }}</span>
+                {% if product.price_was_kes %}
+                  <span class="text-xs text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
+                {% endif %}
+              {% else %}
+                <span class="text-[13px] font-bold text-slate-700 sm:text-sm">Ask for price</span>
               {% endif %}
-            {% else %}
-              <span class="text-[13px] font-bold text-slate-700 sm:text-sm">Ask for price</span>
-            {% endif %}
+            </div>
           </div>
-        </div>
+        {% endif %}
       </div>
     </a>
 

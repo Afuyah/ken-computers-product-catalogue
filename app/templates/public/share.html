@@ -23,8 +23,10 @@
     {% for product in products %}
       <div>
         {{ product_card(product) }}
-        {% if link.show_prices %}
-          <p class="mt-1 px-1 text-sm font-bold text-slate-900">{{ product.price_kes | kes }}</p>
+        {% if link.show_prices and show_prices %}
+          <p class="mt-1 px-1 text-sm font-bold text-slate-900">
+            {% if product.price_kes > 0 %}{{ product.price_kes | kes }}{% else %}Ask for price{% endif %}
+          </p>
         {% endif %}
       </div>
     {% endfor %}

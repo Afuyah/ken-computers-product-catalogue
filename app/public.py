@@ -23,6 +23,7 @@ from .banners import live_banners
 from .extensions import db
 from .models import Category, Product, ProductSlug
 from .search import build_query
+from .settings import prices_visible
 from .storage import storage_is_local
 from .utils import safe_next, truncate
 
@@ -104,14 +105,15 @@ def home():
                 counts.get(child.id, 0) for child in category.children
             )
 
-    # A single top-level category with children (Laptops > HP, Dell…) reads
-    # better as a brand grid on the home page.
-    brand_view = len(categories) == 1 and bool(categories[0].children)
-    display_categories = (
-        [child for child in categories[0].children if child.is_active]
-        if brand_view
-        else categories
-    )
+    # When every top-level category has children (Laptops > HP, Dell…),
+    # the home page reads better as one brand grid.
+    brand_view = bool(categories) and all(category.children for category in categories)
+    if brand_view:
+        display_categories = [
+            child for category in categories for child in category.children if child.is_active
+        ]
+    else:
+        display_categories = categories
 
     total = db.session.scalar(select(func.count(Product.id)).where(_published())) or 0
     return render_template(
@@ -330,6 +332,7 @@ def inject_site():
         "contact_email": cfg["CONTACT_EMAIL"],
         "contact_location": cfg["CONTACT_LOCATION"],
         "cdn_base_url": cfg["CDN_BASE_URL"],
+        "show_prices": prices_visible(),
         "staff_mode": current_user.is_authenticated
         and not session.get("staff_preview", False),
         "meta_description": truncate(

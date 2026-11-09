@@ -365,13 +365,27 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
 
 
-BANNER_THEMES = {
-    "blue": "from-blue-600 via-blue-700 to-slate-900",
+BANNER_THEMES = {    "blue": "from-blue-600 via-blue-700 to-slate-900",
     "emerald": "from-emerald-500 via-emerald-700 to-slate-900",
     "slate": "from-slate-600 via-slate-800 to-black",
     "amber": "from-amber-400 via-orange-600 to-slate-900",
     "rose": "from-rose-500 via-rose-700 to-slate-900",
 }
+
+
+class Setting(db.Model):
+    """Small key/value store for site-wide switches."""
+
+    __tablename__ = "settings"
+
+    key = db.Column(db.String(60), primary_key=True)
+    value = db.Column(db.String(200), nullable=False, default="")
+    updated_at = db.Column(
+        db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<Setting {self.key}={self.value!r}>"
 
 
 class Banner(db.Model):

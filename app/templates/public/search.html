@@ -41,8 +41,10 @@
     <select class="input" id="sort" name="sort">
       <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Best match</option>
       <option value="new" {% if sort == 'new' %}selected{% endif %}>Newest</option>
-      <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: low to high</option>
-      <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: high to low</option>
+      {% if show_prices %}
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: low to high</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: high to low</option>
+      {% endif %}
       <option value="name" {% if sort == 'name' %}selected{% endif %}>Name A–Z</option>
     </select>
   </div>

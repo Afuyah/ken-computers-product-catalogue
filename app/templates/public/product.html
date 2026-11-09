@@ -21,7 +21,7 @@
   {% if product.primary_image and product.primary_image.full %},
   "image": [{{ product.primary_image.full.url | tojson }}]
   {% endif %}
-  {% if product.price_kes > 0 %},
+  {% if show_prices and product.price_kes > 0 %},
   "offers": {
     "@type": "Offer",
     "url": {{ request.url | tojson }},
@@ -119,20 +119,22 @@
     <h1 class="mt-3 text-2xl font-black leading-tight tracking-tight sm:text-3xl">{{ product.title }}</h1>
     {% if product.brand %}<p class="mt-1 text-sm text-slate-500">Brand: <span class="font-medium text-slate-700">{{ product.brand }}</span> · SKU {{ product.sku }}</p>{% endif %}
 
-    {% if product.price_kes > 0 %}
-      <div class="mt-4 flex flex-wrap items-baseline gap-3">
-        <span class="text-3xl font-black text-slate-900">{{ product.price_kes | kes }}</span>
-        {% if product.price_was_kes %}
-          <span class="text-base text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
-          <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">Save {{ product.discount_percent }}%</span>
-        {% endif %}
-      </div>
-      <p class="mt-1 text-xs text-slate-500">Price in Kenyan Shillings. Delivery arranged on order.</p>
-    {% else %}
-      <div class="mt-4">
-        <span class="text-2xl font-black text-slate-900">Ask for price</span>
-        <p class="mt-1 text-xs text-slate-500">Call or WhatsApp us for today's price and availability.</p>
-      </div>
+    {% if show_prices %}
+      {% if product.price_kes > 0 %}
+        <div class="mt-4 flex flex-wrap items-baseline gap-3">
+          <span class="text-3xl font-black text-slate-900">{{ product.price_kes | kes }}</span>
+          {% if product.price_was_kes %}
+            <span class="text-base text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
+            <span class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-bold text-red-700">Save {{ product.discount_percent }}%</span>
+          {% endif %}
+        </div>
+        <p class="mt-1 text-xs text-slate-500">Price in Kenyan Shillings. Delivery arranged on order.</p>
+      {% else %}
+        <div class="mt-4">
+          <span class="text-2xl font-black text-slate-900">Ask for price</span>
+          <p class="mt-1 text-xs text-slate-500">Call or WhatsApp us for today's price and availability.</p>
+        </div>
+      {% endif %}
     {% endif %}
 
     {% if product.summary %}<p class="mt-4 text-sm leading-relaxed text-slate-600">{{ product.summary }}</p>{% endif %}

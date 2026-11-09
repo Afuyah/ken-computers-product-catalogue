@@ -42,6 +42,7 @@ from .models import (
     ShareLink,
     User,
 )
+from .settings import prices_visible, set_setting
 from .utils import make_slug, safe_next, share_token, unique_slug, utcnow
 
 bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -765,3 +766,23 @@ def banner_move(banner_id: int):
         banner.sort_order, other.sort_order = other.sort_order, banner.sort_order
         db.session.commit()
     return redirect(url_for("admin.banners"))
+
+# ---------------------------------------------------------------------------
+# Site settings
+# ---------------------------------------------------------------------------
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings_page():
+    if request.method == "POST":
+        enabled = request.form.get("show_prices") == "on"
+        set_setting("show_prices", "1" if enabled else "0")
+        log("update", "settings", "show_prices", {"show_prices": enabled})
+        db.session.commit()
+        flash(
+            "Prices are now visible." if enabled else "Prices are now hidden across the site.",
+            "success",
+        )
+        return redirect(url_for("admin.settings_page"))
+    return render_template("admin/settings.html", show_prices=prices_visible())

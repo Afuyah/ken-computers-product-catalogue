@@ -142,6 +142,18 @@ navigation becomes Dashboard / Products / Add product / Categories / Share
 links, the footer becomes management links, and every product card gains
 **Edit / Share / ZIP** actions. Signing out returns the customer view.
 
+### Site settings
+
+**Admin → Settings** holds the site-wide switches:
+
+- **Show prices on the public site** — on: priced products show KES amounts and
+  unpriced ones show “Ask for price”. Off: every price disappears from cards,
+  product pages, shared selections and Google structured data, and price
+  sorting is hidden. Staff always see prices in the admin.
+
+The setting is stored in the `settings` table and cached for up to 30 seconds
+per server process.
+
 ### Home banners (advertising hero)
 
 The top of the home page is an admin-managed carousel. **Banners** in the
@@ -304,7 +316,7 @@ python scripts/pos_import.py --refresh-text # regenerate descriptions only
 
 What it does:
 
-- takes only `item_type = 'Laptop'` rows that are not deleted;
+- takes `item_type` of `Laptop` **and** `Tabs`, so ElimuTabs and tablets are included;
 - turns products with variants into one catalogue item per variant, because
   that is where the real price, stock and specs live;
 - maps stock: `0 → out_of_stock`, `1–4 → low_stock`, `5+ → in_stock`;
@@ -313,8 +325,10 @@ What it does:
   **Ask for price**;
 - sanitises names — slashes and control characters removed, `COI5` → `Core i5`,
   `128SSD` → `128GB SSD`, trailing codes like `TKMMM` stripped;
-- creates a `Laptops` category with one child per brand;
-- generates a short description for every laptop;
+- creates `Laptops` and `Tablets` categories, each with one child per brand;
+- generates a short description for every item — no warranty wording, and a
+  friendly condition word (Clean, Neat, Well kept, Excellent, Grade A) instead
+  of “Refurbished”;
 - imports inactive POS items as drafts (unpublished);
 - `--apply` clears products, media, categories, banners and share links first
   (staff accounts are kept).
