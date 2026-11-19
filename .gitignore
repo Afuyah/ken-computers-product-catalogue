@@ -12,3 +12,6 @@ node_modules/
 srv.out
 srv.err
 preview-*.png
+backups/
+.tmp_media/
+images/

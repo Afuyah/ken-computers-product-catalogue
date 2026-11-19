@@ -449,6 +449,42 @@ def unique_title(title: str, used: set[str]) -> str:
     return base
 
 
+def write_snapshot() -> Path | None:
+    """Save the product/media mapping before a destructive import."""
+    import json
+    from datetime import datetime
+
+    try:
+        products = db.session.query(Product).all()
+        media = db.session.query(Media).all()
+        if not products and not media:
+            return None
+
+        backup_dir = ROOT / "backups"
+        backup_dir.mkdir(exist_ok=True)
+        path = backup_dir / f"catalogue-{datetime.now():%Y%m%d-%H%M%S}.json"
+
+        by_id = {p.id: p for p in products}
+        payload = {
+            "products": [
+                {"id": p.id, "sku": p.sku, "title": p.title, "slug": p.slug, "public_id": p.public_id}
+                for p in products
+            ],
+            "media": [
+                {
+                    "public_id": m.public_id,
+                    "product_sku": by_id[m.product_id].sku if m.product_id in by_id else None,
+                    "files": [f.storage_key for f in m.files],
+                }
+                for m in media
+            ],
+        }
+        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        return path
+    except Exception:  # noqa: BLE001 - never block an import on the backup step
+        return None
+
+
 def clear_catalogue() -> None:
     """Remove every piece of catalogue content, keep staff accounts."""
     from flask import current_app
@@ -558,6 +594,11 @@ def main() -> int:
     parser.add_argument("--keep-existing", action="store_true", help="Do not clear existing content")
     parser.add_argument("--sample", type=int, default=8, help="Rows to print in the preview")
     parser.add_argument("--refresh-text", action="store_true", help="Only regenerate descriptions")
+    parser.add_argument(
+        "--force-clear",
+        action="store_true",
+        help="Required when the catalogue already has photos, since importing clears them",
+    )
     args = parser.parse_args()
 
     if args.refresh_text:
@@ -596,6 +637,17 @@ def main() -> int:
     app = create_app()
     with app.app_context():
         if not args.keep_existing:
+            media_count = db.session.query(Media).count()
+            if media_count and not args.force_clear:
+                print(
+                    f"Refusing to clear: {media_count} media row(s) are attached to products.\n"
+                    "Importing would delete them and orphan the files in the bucket.\n"
+                    "Re-run with --force-clear only if that is what you want."
+                )
+                return 3
+            snapshot_path = write_snapshot()
+            if snapshot_path:
+                print(f"Backup written to {snapshot_path}")
             clear_catalogue()
             print("Cleared existing catalogue content (accounts kept).")
         stats = import_items(items)
