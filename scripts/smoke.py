@@ -49,6 +49,8 @@ public_checks = [
     ("/", 200),
     ("/search", 200),
     ("/search?q=hp", 200),
+    ("/b/hp", 200),
+    ("/b/does-not-exist", 404),
     ("/robots.txt", 200),
     ("/sitemap.xml", 200),
     ("/admin/login", 200),

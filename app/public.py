@@ -26,7 +26,7 @@ from .models import Category, Product, ProductSlug
 from .search import build_query
 from .settings import prices_visible
 from .storage import storage_is_local
-from .utils import safe_next, truncate
+from .utils import make_slug, safe_next, truncate
 
 bp = Blueprint("public", __name__)
 
@@ -90,6 +90,43 @@ def _base_query():
     return select(Product).where(_published())
 
 
+def _brand_rows() -> list[tuple[str, int]]:
+    """Distinct brands with published counts, biggest first."""
+    return [
+        (name, count)
+        for name, count in db.session.execute(
+            select(Product.brand, func.count(Product.id))
+            .where(_published(), Product.brand.isnot(None), Product.brand != "")
+            .group_by(Product.brand)
+            .order_by(func.count(Product.id).desc())
+        ).all()
+    ]
+
+
+@bp.get("/b/<slug>")
+def brand(slug: str):
+    match = next((name for name, _ in _brand_rows() if make_slug(name) == slug), None)
+    if match is None:
+        abort(404)
+
+    stmt = _apply_filters(_base_query()).where(Product.brand == match)
+    sort = request.args.get("sort", "new")
+    stmt = stmt.order_by(*SORTS.get(sort, SORTS["new"]))
+    page = request.args.get("page", 1, type=int)
+    pagination = db.paginate(
+        stmt, page=page, per_page=current_app.config["PRODUCTS_PER_PAGE"], error_out=False
+    )
+
+    return render_template(
+        "public/brand.html",
+        brand_name=match,
+        brand_slug=slug,
+        pagination=pagination,
+        products=pagination.items,
+        sort=sort,
+    )
+
+
 @bp.get("/")
 def home():
     featured = db.session.scalars(
@@ -131,11 +168,17 @@ def home():
         display_categories = categories
 
     total = db.session.scalar(select(func.count(Product.id)).where(_published())) or 0
+    brands = [
+        {"name": name, "slug": make_slug(name), "count": count}
+        for name, count in _brand_rows()
+        if name.strip().lower() not in {"", "other"}
+    ]
     return render_template(
         "public/home.html",
         featured=featured,
         latest=latest,
         categories=display_categories,
+        brands=brands,
         brand_view=brand_view,
         counts=counts,
         total=total,

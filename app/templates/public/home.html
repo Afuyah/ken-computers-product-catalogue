@@ -4,7 +4,7 @@
 {% block title %}{{ site_name }} — Laptops, Printers &amp; Accessories in Mombasa{% endblock %}
 
 {% block content %}
-{{ hero(banners, total, categories | length) }}
+{{ hero(banners) }}
 
 <!-- proof strip -->
 <section class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 sm:grid-cols-4">
@@ -22,25 +22,23 @@
   {% endfor %}
 </section>
 
-{% if categories %}
+{% if brands %}
 <section class="mt-14 lg:mt-20">
   <div class="flex items-end justify-between gap-6">
     <div>
       <p class="eyebrow">Browse</p>
-      <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        {{ 'Shop by brand' if brand_view else 'Shop by category' }}
-      </h2>
+      <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Shop by brand</h2>
     </div>
     <a href="{{ url_for('public.search') }}" class="link-underline shrink-0 text-sm">All stock</a>
   </div>
 
   <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {% for category in categories %}
-      <a href="{{ url_for('public.category', slug=category.slug) }}"
+    {% for brand in brands %}
+      <a href="{{ url_for('public.brand', slug=brand.slug) }}"
          class="group flex items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lift">
         <span class="min-w-0">
-          <span class="block truncate text-[13px] font-semibold text-ink">{{ category.name }}</span>
-          <span class="mt-0.5 block text-[11px] text-ink/40">{{ counts.get(category.id, 0) }}</span>
+          <span class="block truncate text-[13px] font-semibold text-ink">{{ brand.name }}</span>
+          <span class="mt-0.5 block text-[11px] text-ink/40">{{ brand.count }} item(s)</span>
         </span>
         <svg class="h-4 w-4 shrink-0 text-ink/20 transition group-hover:translate-x-0.5 group-hover:text-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
       </a>

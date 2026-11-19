@@ -117,7 +117,10 @@
     </div>
 
     <h1 class="mt-3 text-2xl font-black leading-tight tracking-tight sm:text-3xl">{{ product.title }}</h1>
-    {% if product.brand %}<p class="mt-1 text-sm text-slate-500">Brand: <span class="font-medium text-slate-700">{{ product.brand }}</span> · SKU {{ product.sku }}</p>{% endif %}
+    {% if product.brand %}<p class="mt-2 text-sm text-slate-500">Brand:
+      <a class="font-medium text-slate-800 underline decoration-slate-300 underline-offset-4 hover:text-accent hover:decoration-accent"
+         href="{{ url_for('public.brand', slug=product.brand | slugify) }}">{{ product.brand }}</a>
+      · SKU {{ product.sku }}</p>{% endif %}
 
     {% if show_prices %}
       {% if product.price_kes > 0 %}

@@ -7,7 +7,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .extensions import csrf, db, login_manager, migrate
-from .utils import format_kes, human_bytes, truncate
+from .utils import format_kes, human_bytes, make_slug as _slugify, truncate
 
 
 def create_app(config_object: type | None = None) -> Flask:
@@ -40,6 +40,7 @@ def create_app(config_object: type | None = None) -> Flask:
     app.jinja_env.filters["kes"] = format_kes
     app.jinja_env.filters["bytes"] = human_bytes
     app.jinja_env.filters["summary"] = truncate
+    app.jinja_env.filters["slugify"] = _slugify
 
     @app.template_filter("abs_url")
     def absolute_url(value: str | None) -> str:
