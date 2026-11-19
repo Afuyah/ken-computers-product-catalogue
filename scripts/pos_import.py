@@ -71,8 +71,7 @@ PROCESSOR_RE = re.compile(
     re.IGNORECASE,
 )
 
-BRAND_ALIASES = {
-    "hp": "HP",
+BRAND_ALIASES = {    "hp": "HP",
     "hewlett packard": "HP",
     "dell": "Dell",
     "lenovo": "Lenovo",
@@ -103,6 +102,33 @@ CONDITION_LABELS = {
     "used": "Used",
     "second": "Used",
 }
+
+CANONICAL_BRANDS = {
+    "hp": "HP",
+    "hewlett packard": "HP",
+    "dell": "Dell",
+    "lenovo": "Lenovo",
+    "asus": "ASUS",
+    "acer": "Acer",
+    "apple": "Apple",
+    "macbook": "Apple",
+    "ipad": "Apple",
+    "toshiba": "Toshiba",
+    "samsung": "Samsung",
+    "msi": "MSI",
+    "fujitsu": "Fujitsu",
+    "elimutab": "ElimuTab",
+    "winro": "Winro",
+    "b2040": "B2040",
+    "other": "Other",
+}
+
+
+def canonical_brand(value: str | None) -> str:
+    cleaned = " ".join((value or "").split()).strip()
+    if not cleaned:
+        return "Other"
+    return CANONICAL_BRANDS.get(cleaned.lower(), cleaned)
 
 
 @dataclass
@@ -313,7 +339,7 @@ def fetch_laptops(url: str) -> list[Item]:
     ) in products:
         product_variants = variants.get(pid, [])
         base_name = polish_name(clean(expand_processor(clean(name, 140))))
-        brand = brand_of(name, brand_name)
+        brand = canonical_brand(brand_of(name, brand_name))
         group = "Laptops" if (type_name or "Laptop") == "Laptop" else "Tablets"
         kind = "laptop" if group == "Laptops" else "tablet"
 
@@ -458,31 +484,13 @@ def import_items(items: list[Item]) -> dict[str, int]:
         db.session.flush()
         parents[group_name] = parent
 
-    brand_categories: dict[tuple[str, str], Category] = {}
     used_titles: set[str] = set()
     used_slugs: set[str] = set()
     used_skus: set[str] = set()
     stats = {"created": 0, "published": 0, "out": 0, "low": 0, "in": 0}
 
     for order, item in enumerate(items):
-        parent = parents[item.group]
-        brand_name = item.brand or "Other"
-        key = (item.group, brand_name)
-        category = brand_categories.get(key)
-        if category is None:
-            base_slug = make_slug(f"{item.group}-{brand_name}")
-            slug = base_slug
-            n = 2
-            while slug in used_slugs:
-                slug = f"{base_slug}-{n}"
-                n += 1
-            used_slugs.add(slug)
-            category = Category(
-                name=brand_name, slug=slug, parent_id=parent.id, sort_order=len(brand_categories)
-            )
-            db.session.add(category)
-            db.session.flush()
-            brand_categories[key] = category
+        category = parents[item.group]
 
         title = unique_title(item.title, used_titles)
         base_slug = make_slug(title) or f"item-{order}"
