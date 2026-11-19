@@ -1,54 +1,62 @@
 {% macro product_card(product, eager=False) %}
-  <div class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
+  <div class="group flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-lift">
     <a href="{{ url_for('public.product', slug=product.slug) }}" class="flex flex-1 flex-col">
-      <div class="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-white to-slate-50">
+      <div class="relative aspect-[4/3] overflow-hidden bg-paper-100">
         {% if product.primary_image and product.primary_image.card %}
           <img src="{{ product.primary_image.card.url }}"
                alt="{{ product.primary_image.alt or product.title }}"
                {% if eager %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
                decoding="async"
-               class="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-[1.04]">
+               class="h-full w-full object-contain p-5 transition duration-500 ease-out group-hover:scale-[1.04]">
         {% else %}
-          <div class="grid h-full w-full place-items-center text-4xl text-slate-300">🖼️</div>
+          <div class="grid h-full w-full place-items-center">
+            <svg class="h-10 w-10 text-ink/10" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>
+            </svg>
+          </div>
         {% endif %}
 
-        <span class="badge absolute left-2.5 top-2.5 {{ product.stock_badge_class }}">{{ product.stock_label }}</span>
-        {% if product.discount_percent %}
-          <span class="absolute right-2.5 top-2.5 rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm">-{{ product.discount_percent }}%</span>
-        {% endif %}
+        <div class="absolute left-3 top-3 flex flex-col items-start gap-1">
+          <span class="badge {{ product.stock_badge_class }}">{{ product.stock_label }}</span>
+          {% if product.discount_percent %}
+            <span class="badge bg-ink text-paper ring-ink">−{{ product.discount_percent }}%</span>
+          {% endif %}
+        </div>
       </div>
 
-      <div class="flex flex-1 flex-col gap-1 p-3.5">
-        {% if product.brand %}<span class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{{ product.brand }}</span>{% endif %}
-        <h3 class="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-800 group-hover:text-blue-700 sm:text-sm">{{ product.title }}</h3>
+      <div class="flex flex-1 flex-col gap-1.5 p-4">
+        <span class="text-[9px] font-bold uppercase tracking-[0.18em] text-ink/35">{{ product.brand or ' ' }}</span>
+        <h3 class="line-clamp-2 text-[13px] font-semibold leading-snug text-ink group-hover:text-accent sm:text-sm">{{ product.title }}</h3>
         {% if show_prices %}
-          <div class="mt-auto pt-2.5">
-            <div class="flex items-baseline gap-2">
-              {% if product.price_kes > 0 %}
-                <span class="text-[15px] font-black tracking-tight text-slate-900 sm:text-base">{{ product.price_kes | kes }}</span>
-                {% if product.price_was_kes %}
-                  <span class="text-xs text-slate-400 line-through">{{ product.price_was_kes | kes }}</span>
-                {% endif %}
-              {% else %}
-                <span class="text-[13px] font-bold text-slate-700 sm:text-sm">Ask for price</span>
+          <div class="mt-auto flex items-baseline gap-2 pt-3">
+            {% if product.price_kes > 0 %}
+              <span class="font-display text-[15px] font-semibold tracking-tight text-ink sm:text-base">{{ product.price_kes | kes }}</span>
+              {% if product.price_was_kes %}
+                <span class="text-[11px] text-ink/35 line-through">{{ product.price_was_kes | kes }}</span>
               {% endif %}
-            </div>
+            {% else %}
+              <span class="text-[13px] font-semibold text-ink/60">Ask for price</span>
+            {% endif %}
+          </div>
+        {% else %}
+          <div class="mt-auto pt-3">
+            <span class="text-[11px] font-medium uppercase tracking-[0.14em] text-ink/30">{{ product.condition }}</span>
           </div>
         {% endif %}
       </div>
     </a>
 
     {% if staff_mode %}
-      <div class="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 text-[11px] font-semibold">
+      <div class="grid grid-cols-3 divide-x divide-ink/10 border-t border-ink/10 text-[11px] font-semibold">
         <a href="{{ url_for('admin.product_edit', product_id=product.id) }}"
-           class="flex items-center justify-center gap-1 py-2 text-slate-600 hover:bg-blue-50 hover:text-blue-700"
-           title="Edit this product">✎ Edit</a>
+           class="flex items-center justify-center gap-1 py-2.5 text-ink/50 transition hover:bg-ink/[0.03] hover:text-ink"
+           title="Edit this product">Edit</a>
         <a href="{{ url_for('public.product', slug=product.slug) }}#share-panel"
-           class="flex items-center justify-center gap-1 py-2 text-slate-600 hover:bg-blue-50 hover:text-blue-700"
-           title="Share on WhatsApp">↗ Share</a>
+           class="flex items-center justify-center gap-1 py-2.5 text-ink/50 transition hover:bg-ink/[0.03] hover:text-ink"
+           title="Share on WhatsApp">Share</a>
         <a href="{{ url_for('share.download_all', slug=product.slug) }}"
-           class="flex items-center justify-center gap-1 py-2 text-slate-600 hover:bg-blue-50 hover:text-blue-700"
-           title="Download all images as ZIP">⬇ ZIP</a>
+           class="flex items-center justify-center gap-1 py-2.5 text-ink/50 transition hover:bg-ink/[0.03] hover:text-ink"
+           title="Download images">ZIP</a>
       </div>
     {% endif %}
   </div>
@@ -57,13 +65,13 @@
 
 {% macro pagination_nav(pagination) %}
   {% if pagination.pages > 1 %}
-    <nav class="mt-8 flex items-center justify-center gap-1" aria-label="Pagination">
+    <nav class="mt-12 flex items-center justify-center gap-2" aria-label="Pagination">
       {% if pagination.has_prev %}
-        <a class="btn-outline" href="{{ page_url(pagination.prev_num) }}">Previous</a>
+        <a class="btn-outline !px-4 !py-2 text-[13px]" href="{{ page_url(pagination.prev_num) }}">Previous</a>
       {% endif %}
-      <span class="px-3 text-sm text-slate-500">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      <span class="px-3 text-[13px] text-ink/45">{{ pagination.page }} / {{ pagination.pages }}</span>
       {% if pagination.has_next %}
-        <a class="btn-outline" href="{{ page_url(pagination.next_num) }}">Next</a>
+        <a class="btn-outline !px-4 !py-2 text-[13px]" href="{{ page_url(pagination.next_num) }}">Next</a>
       {% endif %}
     </nav>
   {% endif %}

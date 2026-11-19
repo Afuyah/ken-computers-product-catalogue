@@ -4,48 +4,45 @@
 {% block title %}{{ site_name }} — Laptops, Printers &amp; Accessories in Mombasa{% endblock %}
 
 {% block content %}
-{{ hero(banners) }}
+{{ hero(banners, total, categories | length) }}
 
-<section class="mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
-  {% set promises = [
-    ('M4 7h11v9H4z M15 10h3l2 3v3h-5', 'Fast delivery', 'Mombasa same-day, countrywide'),
-    ('M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z', 'Genuine stock', 'Warranty on every unit'),
-    ('M4 7h16v10H4z M8 7V5h8v2', 'Clear pricing', 'No hidden charges'),
-    ('M4 12a8 8 0 1 1 16 0v4a3 3 0 0 1-3 3h-2v-3h3', 'Real support', 'Talk to a person, not a bot')
+<!-- proof strip -->
+<section class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-ink/10 bg-ink/10 sm:grid-cols-4">
+  {% set proofs = [
+    ('Tested before dispatch', 'Every unit checked'),
+    ('Live stock counts', 'What you see is what we have'),
+    ('Mombasa delivery', 'Same day where possible'),
+    ('Countrywide courier', 'Next-day to major towns')
   ] %}
-  {% for path, title, text in promises %}
-    <div class="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-white p-3 sm:gap-3 sm:p-4">
-      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-50 text-blue-700 sm:h-9 sm:w-9">
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="{{ path }}"/></svg>
-      </span>
-      <div class="min-w-0">
-        <p class="text-[13px] font-semibold leading-tight text-slate-900">{{ title }}</p>
-        <p class="mt-0.5 text-[11px] leading-snug text-slate-500 sm:text-xs">{{ text }}</p>
-      </div>
+  {% for title, note in proofs %}
+    <div class="bg-paper px-4 py-5 sm:px-5">
+      <p class="text-[13px] font-semibold text-ink">{{ title }}</p>
+      <p class="mt-1 text-[11px] leading-snug text-ink/45">{{ note }}</p>
     </div>
   {% endfor %}
 </section>
 
 {% if categories %}
-<section class="mt-10">
-  <div class="flex items-end justify-between gap-4">
+<section class="mt-14 lg:mt-20">
+  <div class="flex items-end justify-between gap-6">
     <div>
-      <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-700">Browse</p>
-      <h2 class="mt-1 text-2xl font-black tracking-tight">{{ 'Shop by brand' if brand_view else 'Shop by category' }}</h2>
+      <p class="eyebrow">Browse</p>
+      <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+        {{ 'Shop by brand' if brand_view else 'Shop by category' }}
+      </h2>
     </div>
-    <a href="{{ url_for('public.search') }}" class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-800">All products →</a>
+    <a href="{{ url_for('public.search') }}" class="link-underline shrink-0 text-sm">All stock</a>
   </div>
 
-  <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+  <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
     {% for category in categories %}
       <a href="{{ url_for('public.category', slug=category.slug) }}"
-         class="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
-        <div class="flex items-start justify-between gap-2">
-          <p class="text-sm font-semibold leading-snug text-slate-900 group-hover:text-blue-700">{{ category.name }}</p>
-          <span class="text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600">→</span>
-        </div>
-        <p class="mt-1 text-xs text-slate-500">{{ counts.get(category.id, 0) }} item(s)</p>
-        <div class="mt-4 h-1 w-8 rounded-full bg-blue-600/20 transition-all duration-300 group-hover:w-14 group-hover:bg-blue-600"></div>
+         class="group flex items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lift">
+        <span class="min-w-0">
+          <span class="block truncate text-[13px] font-semibold text-ink">{{ category.name }}</span>
+          <span class="mt-0.5 block text-[11px] text-ink/40">{{ counts.get(category.id, 0) }}</span>
+        </span>
+        <svg class="h-4 w-4 shrink-0 text-ink/20 transition group-hover:translate-x-0.5 group-hover:text-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
       </a>
     {% endfor %}
   </div>
@@ -53,15 +50,15 @@
 {% endif %}
 
 {% if featured %}
-<section class="mt-10">
-  <div class="flex items-end justify-between gap-4">
+<section class="mt-14 lg:mt-20">
+  <div class="flex items-end justify-between gap-6">
     <div>
-      <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-700">Picked for you</p>
-      <h2 class="mt-1 text-2xl font-black tracking-tight">Featured this week</h2>
+      <p class="eyebrow">Picked</p>
+      <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Featured</h2>
     </div>
-    <a href="{{ url_for('public.search', sort='new') }}" class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-800">See all →</a>
+    <a href="{{ url_for('public.search') }}" class="link-underline shrink-0 text-sm">See all</a>
   </div>
-  <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+  <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
     {% for product in featured %}
       {{ product_card(product, eager=loop.first) }}
     {% endfor %}
@@ -70,15 +67,15 @@
 {% endif %}
 
 {% if latest %}
-<section class="mt-10">
-  <div class="flex items-end justify-between gap-4">
+<section class="mt-14 lg:mt-20">
+  <div class="flex items-end justify-between gap-6">
     <div>
-      <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-700">Just arrived</p>
-      <h2 class="mt-1 text-2xl font-black tracking-tight">Latest arrivals</h2>
+      <p class="eyebrow">Just in</p>
+      <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">Latest arrivals</h2>
     </div>
-    <a href="{{ url_for('public.search', sort='new') }}" class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-800">See all →</a>
+    <a href="{{ url_for('public.search', sort='new') }}" class="link-underline shrink-0 text-sm">See all</a>
   </div>
-  <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+  <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
     {% for product in latest %}
       {{ product_card(product) }}
     {% endfor %}
@@ -87,29 +84,37 @@
 {% endif %}
 
 {% if not latest %}
-  <div class="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-    <p class="text-lg font-bold text-slate-800">No products published yet</p>
-    <p class="mt-1 text-sm text-slate-500">Add your first product, or load the demo catalogue to see the layout.</p>
-    <div class="mt-4 flex flex-wrap justify-center gap-2">
-      <a class="btn-primary" href="{{ url_for('admin.product_new') }}">+ Add product</a>
+  <section class="mt-16 rounded-[1.5rem] border border-dashed border-ink/20 bg-white p-12 text-center">
+    <p class="font-display text-2xl font-semibold">Nothing published yet</p>
+    <p class="mt-2 text-sm text-ink/50">Add a product, or load the demo catalogue to see the layout.</p>
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
+      <a class="btn-primary" href="{{ url_for('admin.product_new') }}">Add product</a>
       <a class="btn-outline" href="{{ url_for('public.search') }}">Browse</a>
     </div>
-  </div>
+  </section>
 {% endif %}
 
 {% if not staff_mode %}
-<section class="mt-12 overflow-hidden rounded-2xl bg-slate-900 text-white">
-  <div class="flex flex-col gap-6 px-6 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-10">
-    <div>
-      <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-300">Need a hand?</p>
-      <h2 class="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tell us what you need — we'll quote in minutes.</h2>
-      <p class="mt-1.5 text-sm text-slate-300">Bulk orders, delivery and setup anywhere in Kenya.</p>
+<section class="mt-16 overflow-hidden rounded-[1.5rem] bg-accent text-white sm:rounded-[2rem]">
+  <div class="grid gap-10 px-6 py-12 sm:px-10 lg:grid-cols-12 lg:items-center lg:px-14 lg:py-16">
+    <div class="lg:col-span-8">
+      <p class="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/55">Need it today?</p>
+      <h2 class="mt-4 font-display text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.05] tracking-tightest">
+        Talk to a human.<br class="hidden sm:block"> Not a chatbot.
+      </h2>
+      <p class="mt-5 max-w-md text-sm leading-relaxed text-white/65">
+        Mon–Sat, 8am–6pm. Mombasa · countrywide delivery.
+      </p>
     </div>
-    <div class="flex shrink-0 flex-wrap gap-2">
+    <div class="flex w-full flex-col gap-2 sm:max-w-xs lg:col-span-4 lg:justify-self-end">
       <a href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener"
-         class="btn bg-emerald-500 text-white shadow-sm hover:bg-emerald-400">WhatsApp us</a>
+         class="btn bg-white text-accent-700 hover:bg-paper-100">
+        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20z"/></svg>
+        WhatsApp us
+      </a>
       <a href="tel:{{ contact_phone | replace(' ', '') }}"
-         class="btn bg-white/10 text-white ring-1 ring-inset ring-white/20 hover:bg-white/20">Call {{ contact_phone }}</a>
+         class="btn border border-white/30 text-white hover:bg-white/10">Call {{ contact_phone }}</a>
+      <p class="mt-1 text-center text-[11px] text-white/50">Or visit us in {{ contact_location }}</p>
     </div>
   </div>
 </section>
@@ -135,19 +140,13 @@
         slide.classList.toggle('is-active', i === index);
         slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
       });
-      dots.forEach(function (dot, i) {
-        dot.classList.toggle('is-active', i === index);
-      });
+      dots.forEach(function (dot, i) { dot.classList.toggle('is-active', i === index); });
     }
-
     function start() {
       if (reduceMotion || timer) { return; }
       timer = window.setInterval(function () { show(index + 1); }, 6500);
     }
-
-    function stop() {
-      if (timer) { window.clearInterval(timer); timer = null; }
-    }
+    function stop() { if (timer) { window.clearInterval(timer); timer = null; } }
 
     var prev = hero.querySelector('[data-hero-prev]');
     var next = hero.querySelector('[data-hero-next]');
@@ -156,14 +155,11 @@
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { show(i); stop(); start(); });
     });
-
     hero.addEventListener('mouseenter', stop);
     hero.addEventListener('mouseleave', start);
     hero.addEventListener('focusin', stop);
     hero.addEventListener('focusout', start);
-    document.addEventListener('visibilitychange', function () {
-      document.hidden ? stop() : start();
-    });
+    document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
 
     start();
   })();

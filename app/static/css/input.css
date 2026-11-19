@@ -5,41 +5,64 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
   body {
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    @apply bg-paper text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  ::selection {
+    @apply bg-ink text-paper;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/40 ring-offset-2 ring-offset-paper;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
-      transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold
+      transition duration-200 focus:outline-none disabled:opacity-40;
   }
   .btn-primary {
-    @apply btn bg-blue-700 text-white shadow-sm hover:bg-blue-800 active:bg-blue-900;
+    @apply btn bg-ink text-paper hover:bg-ink-600;
+  }
+  .btn-accent {
+    @apply btn bg-accent text-white hover:bg-accent-600;
   }
   .btn-outline {
-    @apply btn border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50;
+    @apply btn border border-ink/15 bg-transparent text-ink hover:border-ink/30 hover:bg-ink/[0.03];
+  }
+  .btn-ghost {
+    @apply btn text-ink/70 hover:bg-ink/[0.04] hover:text-ink;
   }
   .btn-whatsapp {
-    @apply btn bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800;
+    @apply btn bg-[#25D366] text-[#062b13] hover:bg-[#1ebe5b];
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-      placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100;
+    @apply w-full rounded-xl border border-ink/12 bg-white px-3.5 py-2.5 text-sm text-ink
+      placeholder:text-ink/35 focus:border-ink/30 focus:outline-none focus:ring-4 focus:ring-ink/[0.04];
   }
   .label {
-    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500;
+    @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink/45;
   }
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset;
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset;
   }
-  /* One fluid container for the whole site: full-bleed on laptops and
-     desktops, capped only on ultra-wide monitors. */
   .shell {
-    @apply mx-auto w-full max-w-[1920px] px-3 sm:px-5 lg:px-8 xl:px-10;
+    @apply mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-10 xl:px-12;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-ink/40;
   }
   /* Home hero carousel */
   .hero-slide {
@@ -52,15 +75,24 @@
     visibility: visible;
   }
   .hero-dot {
-    @apply h-2 w-2 rounded-full bg-white/40 transition-all duration-300;
+    @apply h-1.5 w-1.5 rounded-full bg-paper/35 transition-all duration-300;
   }
   .hero-dot.is-active {
-    @apply w-6 bg-white;
+    @apply w-6 bg-paper;
+  }
+  .link-underline {
+    @apply relative inline-flex items-center gap-1.5 font-semibold text-ink
+      after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-right
+      after:scale-x-0 after:bg-ink after:transition-transform after:duration-300
+      hover:after:origin-left hover:after:scale-x-100;
   }
   @media (prefers-reduced-motion: reduce) {
     .hero-slide,
     .hero-dot {
       transition: none;
+    }
+    html {
+      scroll-behavior: auto;
     }
   }
 }
