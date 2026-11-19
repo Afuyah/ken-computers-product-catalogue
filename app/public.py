@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 
 from flask import (
     Blueprint,
@@ -28,6 +29,20 @@ from .storage import storage_is_local
 from .utils import safe_next, truncate
 
 bp = Blueprint("public", __name__)
+
+_asset_version: str | None = None
+
+
+def _css_version() -> str:
+    """Cache-buster for the stylesheet so a redesign isn't masked by caches."""
+    global _asset_version
+    if _asset_version is None:
+        path = Path(current_app.static_folder or "") / "css" / "app.css"
+        try:
+            _asset_version = str(int(path.stat().st_mtime))
+        except OSError:
+            _asset_version = "1"
+    return _asset_version
 
 SORTS = {
     "new": (Product.created_at.desc(),),
@@ -332,6 +347,7 @@ def inject_site():
         "contact_email": cfg["CONTACT_EMAIL"],
         "contact_location": cfg["CONTACT_LOCATION"],
         "cdn_base_url": cfg["CDN_BASE_URL"],
+        "asset_version": _css_version(),
         "show_prices": prices_visible(),
         "staff_mode": current_user.is_authenticated
         and not session.get("staff_preview", False),

@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   {% if cdn_base_url %}<link rel="preconnect" href="{{ cdn_base_url }}" crossorigin>{% endif %}
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230B0B0F'/><text x='50' y='68' font-family='Arial' font-size='54' font-weight='700' text-anchor='middle' fill='%23FAF9F6'>K</text></svg>">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ asset_version }}">
   {% block head %}{% endblock %}
 </head>
 {% set staff_preview = session.get('staff_preview', False) %}
