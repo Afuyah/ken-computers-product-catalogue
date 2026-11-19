@@ -32,17 +32,23 @@
     <a href="{{ url_for('public.search') }}" class="link-underline shrink-0 text-sm">All stock</a>
   </div>
 
-  <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {% for brand in brands %}
-      <a href="{{ url_for('public.brand', slug=brand.slug) }}"
-         class="group flex items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lift">
-        <span class="min-w-0">
-          <span class="block truncate text-[13px] font-semibold text-ink">{{ brand.name }}</span>
-          <span class="mt-0.5 block text-[11px] text-ink/40">{{ brand.count }} item(s)</span>
-        </span>
-        <svg class="h-4 w-4 shrink-0 text-ink/20 transition group-hover:translate-x-0.5 group-hover:text-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-      </a>
-    {% endfor %}
+  <div class="relative -mx-4 mt-8 sm:mx-0">
+    <div class="snap-x snap-mandatory overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0"
+         tabindex="0" role="region" aria-label="Brands — scroll sideways for more">
+      <div class="grid grid-flow-col grid-rows-2 auto-cols-[minmax(9.5rem,46%)] gap-3 sm:grid-flow-row sm:grid-rows-none sm:auto-cols-auto sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+        {% for brand in brands %}
+          <a href="{{ url_for('public.brand', slug=brand.slug) }}"
+             class="group flex snap-start items-center justify-between gap-3 rounded-xl border border-ink/10 bg-white px-4 py-4 transition duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lift">
+            <span class="min-w-0">
+              <span class="block truncate text-[13px] font-semibold text-ink">{{ brand.name }}</span>
+              <span class="mt-0.5 block text-[11px] text-ink/40">{{ brand.count }}</span>
+            </span>
+            <svg class="h-4 w-4 shrink-0 text-ink/20 transition group-hover:translate-x-0.5 group-hover:text-ink" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="pointer-events-none absolute inset-y-0 -right-4 w-14 bg-gradient-to-l from-paper via-paper/80 to-transparent sm:hidden" aria-hidden="true"></div>
   </div>
 </section>
 {% endif %}
