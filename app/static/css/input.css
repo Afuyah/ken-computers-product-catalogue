@@ -75,10 +75,10 @@
     visibility: visible;
   }
   .hero-dot {
-    @apply h-1.5 w-1.5 rounded-full bg-paper/35 transition-all duration-300;
+    @apply h-1.5 w-1.5 rounded-full bg-ink/15 transition-all duration-300;
   }
   .hero-dot.is-active {
-    @apply w-6 bg-paper;
+    @apply w-6 bg-ink;
   }
   .link-underline {
     @apply relative inline-flex items-center gap-1.5 font-semibold text-ink

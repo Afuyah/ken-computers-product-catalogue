@@ -1,41 +1,38 @@
 {% macro hero(banners, total=0, brand_count=0) %}
-<section class="relative overflow-hidden rounded-[1.5rem] bg-ink text-paper sm:rounded-[2rem]" data-hero>
-  <div class="relative min-h-[540px] sm:min-h-[560px] lg:min-h-[620px]">
+<section class="relative overflow-hidden rounded-[1.5rem] border border-ink/10 bg-paper text-ink sm:rounded-[2rem]" data-hero>
+  <div class="relative min-h-[520px] sm:min-h-[540px] lg:min-h-[580px]">
     {% if banners %}
       {% for banner in banners %}
         <article class="hero-slide absolute inset-0 {% if loop.first %}is-active{% endif %}"
                  data-slide aria-hidden="{{ 'false' if loop.first else 'true' }}">
+          <div class="absolute inset-0 bg-gradient-to-br {{ banner.gradient }}"></div>
           {% if banner.image_url %}
             <img src="{{ banner.image_url }}" alt="{{ banner.image_alt }}"
-                 class="absolute inset-0 h-full w-full object-cover opacity-70"
+                 class="absolute inset-0 h-full w-full object-cover opacity-90"
                  {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
                  decoding="async">
-            <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/20"></div>
-          {% else %}
-            <div class="absolute inset-0 bg-gradient-to-br {{ banner.gradient }}"></div>
-            <div class="absolute inset-0 bg-ink/35"></div>
-            <div class="absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full bg-paper/10 blur-3xl"></div>
-            <div class="absolute -bottom-40 left-1/3 h-96 w-96 rounded-full bg-black/30 blur-3xl"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-paper via-paper/85 to-paper/10"></div>
           {% endif %}
+          <div class="pointer-events-none absolute -right-40 -top-48 h-[34rem] w-[34rem] rounded-full bg-accent/[0.07] blur-[120px]"></div>
 
-          <div class="relative flex h-full min-h-[540px] items-center px-6 py-14 sm:min-h-[560px] sm:px-10 lg:min-h-[620px] lg:px-16">
-            <div class="max-w-3xl {% if banner.is_centered %}mx-auto text-center{% endif %}">
+          <div class="relative flex h-full min-h-[520px] items-center px-6 py-14 sm:min-h-[540px] sm:px-10 lg:min-h-[580px] lg:px-16">
+            <div class="max-w-2xl {% if banner.is_centered %}mx-auto text-center{% endif %}">
               {% if banner.eyebrow %}
-                <span class="inline-flex items-center gap-2 rounded-full border border-paper/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-paper/80">
-                  <span class="h-1 w-1 rounded-full bg-emerald-400"></span>{{ banner.eyebrow }}
+                <span class="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink/60">
+                  <span class="h-1 w-1 rounded-full bg-accent"></span>{{ banner.eyebrow }}
                 </span>
               {% endif %}
-              <h1 class="mt-6 font-display text-[clamp(2.4rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-tightest">{{ banner.headline }}</h1>
+              <h1 class="mt-6 font-display text-[clamp(2.3rem,5.6vw,4.2rem)] font-semibold leading-[1.02] tracking-tightest text-ink">{{ banner.headline }}</h1>
               {% if banner.subtext %}
-                <p class="mt-5 max-w-lg text-sm leading-relaxed text-paper/60 sm:text-base {% if banner.is_centered %}mx-auto{% endif %}">{{ banner.subtext }}</p>
+                <p class="mt-5 max-w-lg text-sm leading-relaxed text-ink/55 sm:text-base {% if banner.is_centered %}mx-auto{% endif %}">{{ banner.subtext }}</p>
               {% endif %}
               {% if banner.cta_label or banner.secondary_label %}
                 <div class="mt-8 flex flex-wrap gap-3 {% if banner.is_centered %}justify-center{% endif %}">
                   {% if banner.cta_label %}
-                    <a href="{{ banner.cta_url or url_for('public.search') }}" class="btn bg-paper text-ink hover:bg-white">{{ banner.cta_label }}</a>
+                    <a href="{{ banner.cta_url or url_for('public.search') }}" class="btn-primary">{{ banner.cta_label }}</a>
                   {% endif %}
                   {% if banner.secondary_label %}
-                    <a href="{{ banner.secondary_url or '#' }}" class="btn border border-paper/25 text-paper hover:bg-paper/10">{{ banner.secondary_label }}</a>
+                    <a href="{{ banner.secondary_url or '#' }}" class="btn-outline">{{ banner.secondary_label }}</a>
                   {% endif %}
                 </div>
               {% endif %}
@@ -45,53 +42,48 @@
       {% endfor %}
     {% else %}
       <article class="hero-slide is-active absolute inset-0" data-slide aria-hidden="false">
-        <div class="absolute inset-0 bg-ink"></div>
-        <div class="absolute -right-40 -top-48 h-[34rem] w-[34rem] rounded-full bg-accent/20 blur-[120px]"></div>
-        <div class="absolute -bottom-56 -left-24 h-[30rem] w-[30rem] rounded-full bg-paper/[0.05] blur-[100px]"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-paper-100 via-paper to-white"></div>
+        <div class="pointer-events-none absolute -right-40 -top-52 h-[36rem] w-[36rem] rounded-full bg-accent/[0.08] blur-[130px]"></div>
+        <div class="pointer-events-none absolute -bottom-56 -left-32 h-[32rem] w-[32rem] rounded-full bg-emerald-500/[0.06] blur-[120px]"></div>
 
-        <div class="relative flex h-full min-h-[540px] items-center px-6 py-14 sm:min-h-[560px] sm:px-10 lg:min-h-[620px] lg:px-16">
+        <div class="relative flex h-full min-h-[520px] items-center px-6 py-14 sm:min-h-[540px] sm:px-10 lg:min-h-[580px] lg:px-16">
           <div class="grid w-full items-center gap-12 lg:grid-cols-12">
             <div class="lg:col-span-6">
-              <h1 class="font-display text-[clamp(2.6rem,6vw,4.8rem)] font-semibold leading-[0.98] tracking-tightest">
-                Laptops, printers<br class="hidden sm:block">&amp; accessories
+              <h1 class="font-display text-[clamp(2.4rem,5.8vw,4.6rem)] font-semibold leading-[0.98] tracking-tightest text-ink">
+                Laptops, printers<br class="hidden sm:block"> &amp; accessories
               </h1>
-              <p class="mt-6 max-w-md text-base leading-relaxed text-paper/55">
+              <p class="mt-6 max-w-md text-base leading-relaxed text-ink/55">
                 Genuine business laptops, gaming machines, printers and the consumables that keep them running
               </p>
               <div class="mt-9 flex flex-wrap items-center gap-3">
-                <a href="{{ url_for('public.search') }}" class="btn bg-paper text-ink hover:bg-white">Browse stock</a>
+                <a href="{{ url_for('public.search') }}" class="btn-primary">Browse stock</a>
                 {% if staff_mode %}
-                  <a href="{{ url_for('admin.product_new') }}" class="btn border border-paper/25 text-paper hover:bg-paper/10">Add product</a>
+                  <a href="{{ url_for('admin.product_new') }}" class="btn-outline">Add product</a>
                 {% else %}
-                  <a href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener" class="btn border border-paper/25 text-paper hover:bg-paper/10">Talk to us</a>
+                  <a href="https://wa.me/{{ contact_whatsapp }}" target="_blank" rel="noopener" class="btn-outline">Talk to us</a>
                 {% endif %}
               </div>
             </div>
 
             <div class="hidden lg:col-span-6 lg:block lg:justify-self-end">
-              <svg viewBox="0 0 520 440" class="h-auto w-full max-w-[520px] text-paper/25" fill="none"
+              <svg viewBox="0 0 520 440" class="h-auto w-full max-w-[500px] text-ink/15" fill="none"
                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <!-- laptop -->
                 <rect x="64" y="86" width="252" height="164" rx="12"/>
-                <rect x="80" y="102" width="220" height="132" rx="6" stroke-opacity=".5"/>
+                <rect x="80" y="102" width="220" height="132" rx="6" stroke-opacity=".55"/>
                 <path d="M46 250h288l-20 30H66z"/>
-                <path d="M176 265h28" stroke-opacity=".5"/>
-                <!-- printer -->
-                <g class="text-accent" stroke="currentColor">
+                <path d="M176 265h28" stroke-opacity=".55"/>
+                <g class="text-accent/60" stroke="currentColor">
                   <rect x="344" y="168" width="128" height="98" rx="12"/>
                   <path d="M366 168v-34h84v34"/>
                   <path d="M362 206h92" stroke-opacity=".7"/>
                   <rect x="376" y="232" width="64" height="18" rx="4" stroke-opacity=".7"/>
                 </g>
-                <!-- mouse + cable -->
                 <rect x="108" y="318" width="52" height="74" rx="26"/>
-                <path d="M134 318v24" stroke-opacity=".5"/>
-                <path d="M160 355h56c18 0 26-10 26-24" stroke-opacity=".5"/>
-                <!-- small accessory: adapter -->
+                <path d="M134 318v24" stroke-opacity=".55"/>
+                <path d="M160 355h56c18 0 26-10 26-24" stroke-opacity=".55"/>
                 <rect x="376" y="306" width="60" height="34" rx="8"/>
-                <path d="M406 306v-14" stroke-opacity=".5"/>
-                <!-- accents -->
-                <circle cx="470" cy="120" r="4" class="text-accent" stroke="currentColor"/>
+                <path d="M406 306v-14" stroke-opacity=".55"/>
+                <circle cx="470" cy="120" r="4" class="text-accent/70" stroke="currentColor"/>
                 <circle cx="60" cy="330" r="3" stroke-opacity=".4"/>
                 <circle cx="330" cy="70" r="3" stroke-opacity=".4"/>
               </svg>
@@ -104,7 +96,7 @@
 
   {% if staff_mode %}
     <a href="{{ url_for('admin.banners') }}"
-       class="absolute right-4 top-4 rounded-full bg-paper/10 px-3 py-1.5 text-[11px] font-semibold text-paper/80 backdrop-blur hover:bg-paper/20">
+       class="absolute right-4 top-4 rounded-full border border-ink/10 bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-ink/60 backdrop-blur hover:bg-white hover:text-ink">
       Manage banners
     </a>
   {% endif %}
@@ -117,11 +109,11 @@
       {% endfor %}
     </div>
     <button type="button" data-hero-prev aria-label="Previous slide"
-            class="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-paper/20 text-paper/80 transition hover:bg-paper/10 sm:flex">
+            class="absolute left-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-ink/15 bg-white/70 text-ink/60 backdrop-blur transition hover:bg-white hover:text-ink sm:flex">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
     </button>
     <button type="button" data-hero-next aria-label="Next slide"
-            class="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-paper/20 text-paper/80 transition hover:bg-paper/10 sm:flex">
+            class="absolute right-4 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-ink/15 bg-white/70 text-ink/60 backdrop-blur transition hover:bg-white hover:text-ink sm:flex">
       <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
     </button>
   {% endif %}

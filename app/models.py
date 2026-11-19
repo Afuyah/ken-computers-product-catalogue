@@ -365,11 +365,12 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
 
 
-BANNER_THEMES = {    "blue": "from-blue-600 via-blue-700 to-slate-900",
-    "emerald": "from-emerald-500 via-emerald-700 to-slate-900",
-    "slate": "from-slate-600 via-slate-800 to-black",
-    "amber": "from-amber-400 via-orange-600 to-slate-900",
-    "rose": "from-rose-500 via-rose-700 to-slate-900",
+BANNER_THEMES = {
+    "blue": "from-blue-50 via-paper to-paper",
+    "emerald": "from-emerald-50 via-paper to-paper",
+    "slate": "from-slate-100 via-paper to-paper",
+    "amber": "from-amber-50 via-paper to-paper",
+    "rose": "from-rose-50 via-paper to-paper",
 }
 
 
